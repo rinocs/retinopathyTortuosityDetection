@@ -7,67 +7,181 @@ import matplotlib.pyplot as plt
 import scipy.ndimage as nd
 from utils.imageproc import image_util
 from utils.vessels import vessels_util
+from utils.math import tortuosity
+import math
 
-
-img = cv2.imread('myProject/sample/vessel1.png')
+img = cv2.imread('sample/CHASE/train/label/hImage_01L_1stHO.png')
+img1 = cv2.imread('sample/CHASE/train/image/hImage_01L.jpg')
+img2 = cv2.imread('sample/CHASE/train/image/hImage_01L.jpg',0)
 #functions.connected_component_label('myProject/sample/vessel1.png')
 if img is None:
     print('Error loading image')
     exit()  
 resized = image_util.image_resize(img)    
-frame = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+
+gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+
 #ret, bw_img = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
-ret, frame = cv2.threshold(frame, 127, 1, cv2.THRESH_BINARY)
+ret, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY )
+cv2.imshow("thresh1", thresh)
+cv2.waitKey(0)
+
 #ret,frame = cv2.threshold(img,127,255,0)
-#binary = frame > filters.threshold_otsu(frame)
-#np.unique(binary)
+binary = thresh > filters.threshold_otsu(thresh)
+np.unique(binary)
+# binary = image_util.get_uint_image(binary)
 
-skel, distance = medial_axis(frame, return_distance=True)
 
-skeleton = skeletonize(frame)
+#thin = image_util.thinning_zhang_suen(img)
+imgGray = cv2.cvtColor(img1,cv2.COLOR_BGR2GRAY)
+ret,threshold_img = cv2.threshold(imgGray,127,255,cv2.THRESH_BINARY)
+# frame = image_util.get_uint_image(frame)
+
+##### SKELETON 
+skel, distance = medial_axis(binary, return_distance=True)
+
+skeleton = skeletonize(binary)
 # Distance to the background for pixels of the skeleton
 dist_on_skel = distance * skel
-
-
-print(np.any(skeleton[:, :] == 1 ))
-colour_frame = img
-
-rows = frame.shape[0]
-cols = frame.shape[1]
+cv2.imshow("skel", dist_on_skel)
+cv2.waitKey(0)
 skeleton = image_util.get_uint_image(skeleton)
+
 skeleton_rgb = image_util.bin_to_bgr_(skeleton)
 #branch_locations = getSkeletonIntersection(skeleton)
 branch_locations = vessels_util.getIntersections(skeleton)
-end_points = vessels_util.getEndPoints(skeleton)
+branch_locations2 = vessels_util.getIntersections(dist_on_skel)
+end_points = vessels_util.getEndPoints(dist_on_skel)
 
 all_points = np.array( branch_locations)
 
-plt.scatter(all_points[:,0], all_points[:,1])
-plt.show()
-skeleton_copy = skeleton.copy()
-vessels_util.connected_component_label(skeleton_copy, branch_locations)
+vessels_data = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
+vessels_coord = vessels_data["coords"]
 
-#v_width = functions.vessel_width(frame,branch_locations)
-#vessels = functions.finding_landmark_vessels(v_width, branch_locations, skeleton, skeleton_rgb)
+v_width = vessels_util.vessel_width(thresh, vessels_coord)
 
-for points in branch_locations:
+active_neigh = []
+for el in vessels_coord[0]:
+    active_neigh.append(image_util.active_neihbours(el[0], el[1], thresh))
+
+
+
+
+# # Create Window
+# source_window = 'Source'
+# cv2.namedWindow(source_window)
+# cv2.imshow(source_window, thresh)
+# max_thresh = 255
+# thresh_val = 100 # initial threshold
+# cv2.createTrackbar('Canny Thresh:', source_window, thresh_val, max_thresh, image_util.thresh_callback)
+# image_util.thresh_callback(thresh_val,skeleton)
+# cv2.waitKey()
+
+# mean_torts, tortuos, mean_arc_torts = tortuosity.tortuosity_measure(imgGray)
+# print("tortuosity111:" + tortuos)
+
+
+# for points in branch_locations:
     
+#     if not points:
+#           print("List is empty")
+#           continue 
+#     #cv2.drawContours(skeleton, np.array([points]), 0, (255,0,0), 2)
+#     cv2.circle(skeleton,tuple(points) , 2, (255, 255, 0), 5)
+# #         cv2.circle(img,point , 2, (255, 0, 0), 5)
+    
+print(thresh[17][379])
+skel2 = skeleton.copy()
+for points in branch_locations2:
+        
     if not points:
           print("List is empty")
           continue 
     #cv2.drawContours(skeleton, np.array([points]), 0, (255,0,0), 2)
-    cv2.circle(skeleton,tuple(points) , 2, (255, 255, 0), 5)
+    cv2.circle(skel2,tuple(points) , 2, (255, 255, 0), 5)
 #         cv2.circle(img,point , 2, (255, 0, 0), 5)
     
+    
+mask = np.zeros_like(gray)
+
+contours, hierarchy  = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+cnt = contours[1]
+res_img = img.copy()
+size = np.size(img)
+kernel = np.ones((2,2), np.uint8)
+skeleton_contours, _ = cv2.findContours(skeleton, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+largest_skeleton_contour = max(skeleton_contours, key=cv2.contourArea)
+# cv2.drawContours(gray, skeleton_contours, -1, (0, 255, 0), 3)
+
+skel_rows,skel_cols = np.where(skeleton > 0)
+skel_points = [(x,y) for x,y in zip(skel_rows,skel_cols)]
+# skel_points = np.column_stack(np.where(skeleton>0)) 
+
+for point in skel_points:
+    
+    cv2.circle(gray,point,1, (0,0,255), 1)
+# # Extend the skeleton past the edges of the banana
+# points = []
+# for point in largest_skeleton_contour: points.append(tuple(point[0]))
+# x,y = zip(*points)
+# z = np.polyfit(x,y,7)
+# f = np.poly1d(z)
+# x_new = np.linspace(0, img.shape[1],300)
+# y_new = f(x_new)
+# extension = list(zip(x_new, y_new))
+# img = img.copy()
+# for point in range(len(extension)-1):
+#     a = tuple(np.array(extension[point], int))
+#     b = tuple(np.array(extension[point+1], int))
+#     cv2.line(img, a, b, (0,0,255), 1)
+#     cv2.line(mask, a, b, 255, 1)   
+# mask_px = np.count_nonzero(mask)
+
+# # Find the distance between points in the contour of the banana
+# # Only look at distances that cross the mid line
+# def is_collision(mask_px, mask, a, b):
+#     temp_image = mask.copy()
+#     cv2.line(temp_image, a, b, 0, 2)
+#     new_total = np.count_nonzero(temp_image)
+#     if new_total != mask_px: return True
+#     else: return False
+
+# def distance(a,b): return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+
+# distances = []
+# for point_a in cnt[:int(len(cnt)/2)]:
+#     temp_distance = 0
+#     close_distance = img.shape[0] * img.shape[1]
+#     close_points = (0,0),(0,0)
+#     for point_b in cnt:
+#         A, B = tuple(point_a[0]), tuple(point_b[0])
+#         dist = distance(tuple(point_a[0]), tuple(point_b[0]))
+#         if is_collision(mask_px, mask, A, B):
+#             if dist < close_distance:
+#                 close_points = A, B
+#                 close_distance = dist
+#     cv2.line(img, close_points[0], close_points[1], (234,234,123), 1)
+#     distances.append((close_distance, close_points))
+#     cv2.imshow('img',img)
+#     cv2.waitKey(1)    
+    
+# max_thickness = max(distances)
+# a, b = max_thickness[1][0], max_thickness[1][1]
+# cv2.line(img, a, b, (0,255,0), 4)
+# print("maximum thickness = ", max_thickness[0])
+
+
+# cv2.drawContours(res_img, contours, -1, (0,255,75), 2)
+
 fig, axes = plt.subplots(2, 2, figsize=(8, 8), sharex=True, sharey=True)
 ax = axes.ravel()
 
-ax[0].imshow(frame, cmap=plt.cm.gray)
+ax[0].imshow(img, cmap=plt.cm.gray)
 ax[0].set_title('original')
 ax[0].axis('off')
 
 ax[1].imshow(dist_on_skel, cmap='magma')
-ax[1].contour(frame, [0.5], colors='w')
+ax[1].contour(gray, [0.5], colors='w')
 ax[1].set_title('medial_axis')
 ax[1].axis('off')
 
@@ -79,11 +193,14 @@ ax[3].imshow(resized, cmap=plt.cm.gray)
 ax[3].set_title('crossover')
 ax[3].axis('off')    
 
-
 fig.tight_layout()
 plt.show()
-cv2.imshow("Frame", skeleton)
-#cv2.imshow("Frame1", img)
+
+cv2.imshow("prova", img)
+cv2.imshow("prova1", res_img)
+cv2.imshow("Frame2", skel2)
+cv2.imshow("Frame3", gray)
+cv2.imshow("Frame4", dist_on_skel)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

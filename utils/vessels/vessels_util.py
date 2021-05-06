@@ -6,52 +6,49 @@ from skimage.morphology import skeletonize,medial_axis
 import sys
 import matplotlib.pyplot as plt
 import scipy.ndimage as nd
-from skimage.measure import regionprops_table
+from skimage.measure import regionprops_table, regionprops, label
 from utils.math import tortuosity
+import math
 
 
-def neighbours(x,y,image):
-    """Return 8-neighbours of image point P1(x,y), in a clockwise order"""
-    img = image
-    x_1, y_1, x1, y1 = x-1, y-1, x+1, y+1;
-    return [ img[x_1][y], img[x_1][y1], img[x][y1], img[x1][y1], img[x1][y], img[x1][y_1], img[x][y_1], img[x_1][y_1] ]   
 
 def vessel_width(thresholded_image: np.ndarray, landmarks: list):
     image = thresholded_image.copy()
     widths = []
     for j in landmarks:
-        w0 = w45 = w90 = w135 = 0
-        w180 = w225 = w270 = w315 = 1
-        while True:
-            if image[j[0], j[1] + w0 + 1] != 0:
-                w0 += 1
-            if image[j[0], j[1] - w180 - 1] != 0:
-                w180 += 1
-            if image[j[0] - w45 - 1, j[1] + w45 + 1] != 0:
-                w45 += 1
-            if image[j[0] + w225 + 1, j[1] - w225 - 1] != 0:
-                w225 += 1
-            if image[j[0] - w90 - 1, j[1]] != 0:
-                w90 += 1
-            if image[j[0] + w270 + 1, j[1]] != 0:
-                w270 += 1
-            if image[j[0] - w135 - 1, j[1] - w135 - 1] != 0:
-                w135 += 1
-            if image[j[0] + w315 + 1, j[1] + w315 + 1] != 0:
-                w315 += 1
+        for el in j:
+            w0 = w45 = w90 = w135 = 0
+            w180 = w225 = w270 = w315 = 1
+            while True:
+                if image[el[0], el[1] + w0 + 1] != 0:
+                    w0 += 1
+                if image[el[0], el[1] - w180 - 1] != 0:
+                    w180 += 1
+                if image[el[0] - w45 - 1, el[1] + w45 + 1] != 0:
+                    w45 += 1
+                if image[el[0] + w225 + 1, el[1] - w225 - 1] != 0:
+                    w225 += 1
+                if image[el[0] - w90 - 1, el[1]] != 0:
+                    w90 += 1
+                if image[el[0] + w270 + 1, el[1]] != 0:
+                    w270 += 1
+                if image[el[0] - w135 - 1, el[1] - w135 - 1] != 0:
+                    w135 += 1
+                if image[el[0] + w315 + 1, el[1] + w315 + 1] != 0:
+                    w315 += 1
 
-            if image[j[0], j[1] + w0 + 1] == 0 and image[j[0], j[1] - w180 - 1] == 0:
-                widths.append([0, w0, w180])
-                break
-            elif image[j[0] - w45 - 1, j[1] + w45 + 1] == 0 and image[j[0] + w225 + 1, j[1] - w225 - 1] == 0:
-                widths.append([45, w45, w225])
-                break
-            elif image[j[0] - w90 - 1, j[1]] == 0 and image[j[0] + w270 + 1, j[1]] == 0:
-                widths.append([90, w90, w270])
-                break
-            elif image[j[0] - w135 - 1, j[1] - w135 - 1] == 0 and image[j[0] + w315 + 1, j[1] + w315 + 1] == 0:
-                widths.append([135, w135, w315])
-                break
+                if image[el[0], el[1] + w0 + 1] == 0 and image[el[0], el[1] - w180 - 1] == 0:
+                    widths.append([0, w0, w180])
+                    break
+                elif image[el[0] - w45 - 1, el[1] + w45 + 1] == 0 and image[el[0] + w225 + 1, el[1] - w225 - 1] == 0:
+                    widths.append([45, w45, w225])
+                    break
+                elif image[el[0] - w90 - 1, el[1]] == 0 and image[el[0] + w270 + 1, el[1]] == 0:
+                    widths.append([90, w90, w270])
+                    break
+                elif image[el[0] - w135 - 1, el[1] - w135 - 1] == 0 and image[el[0] + w315 + 1, el[1] + w315 + 1] == 0:
+                    widths.append([135, w135, w315])
+                    break
 
     return widths
 
@@ -427,19 +424,46 @@ def separate_labels(labels):
 
     props = regionprops_table(labels,None,('label','coords','bbox','area','centroid'))
     
-    #vessels = dict(zip(props['label'],props['coords']))
+    vessels = dict(zip(props['label'],props['coords']))
     # for prop in props:
     #     print(prop['label']) # individual properties can be accessed via square brackets
-    #     # cropped_shape = prop['filled_image'] # this gives you the content of the bounding box as an array of bool.
-    #     # cropped_shape = 1 * cropped_shape # convert to integer
+    #     cropped_shape = prop['filled_image'] # this gives you the content of the bounding box as an array of bool.
+    #     cropped_shape = 1 * cropped_shape # convert to integer
     #     print(prop['coords'])
     #     # save image with your favourite imsave. Data conversion might be neccessary if you use cv2   
-    #     # plt.imshow(cropped_shape)
-    #     # plt.axis("off")
-    #     # plt.title("component Image")
-    #     # plt.show() 
+    #     plt.imshow(cropped_shape)
+    #     plt.axis("off")
+    #     plt.title("component Image")
+    #     plt.show() 
     return props
 
+def estimate_width(thresh):
+    
+    label_img = label(thresh)
+    regions = regionprops(label_img)
+
+    fig, ax = plt.subplots()
+    ax.imshow(thresh, cmap=plt.cm.gray)
+
+    for props in regions:
+        y0, x0 = props.centroid
+        orientation = props.orientation
+        x1 = x0 + math.cos(orientation) * 0.5 * props.minor_axis_length
+        y1 = y0 - math.sin(orientation) * 0.5 * props.minor_axis_length
+        x2 = x0 - math.sin(orientation) * 0.5 * props.major_axis_length
+        y2 = y0 - math.cos(orientation) * 0.5 * props.major_axis_length
+
+        ax.plot((x0, x1), (y0, y1), '-r', linewidth=2.5)
+        ax.plot((x0, x2), (y0, y2), '-r', linewidth=2.5)
+        ax.plot(x0, y0, '.g', markersize=15)
+
+        minr, minc, maxr, maxc = props.bbox
+        bx = (minc, maxc, maxc, minc, minc)
+        by = (minr, minr, maxr, maxr, minr)
+        ax.plot(bx, by, '-b', linewidth=2.5)
+
+    ax.axis((0, 600, 600, 0))
+    plt.show()
 def connected_component_label(skeleton, branch_points):
     
     # Getting the input image
@@ -447,27 +471,25 @@ def connected_component_label(skeleton, branch_points):
     # Converting those pixels with values 1-127 to 0 and others to 1
    # img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)[1]
     # Applying cv2.connectedComponents() 
-    # Showing Original Image
-    plt.imshow(img)
-    plt.axis("off")
-    plt.title("Orginal true Image")
-    plt.show()
+    # # Showing Original Image
+    # plt.imshow(img)
+    # plt.axis("off")
+    # # plt.title("Orginal true Image")
+    # plt.show()
     for point in branch_points:
        # print("point ", point, point[0], point[1])
         #print("prima ", img[point[1],point[0]])
         img[point[1],point[0]] = 0
-        img[point[1] +1,point[0]] = 0
-        img[point[1] -1,point[0]] = 0
-        img[point[1] ,point[0]-1] = 0
-        img[point[1] ,point[0]+1] = 0
-        img[point[1]-1 ,point[0]-1] = 0
-        img[point[1]-1 ,point[0]+1] = 0
-        img[point[1]+1 ,point[0]+1] = 0
-        img[point[1]+1 ,point[0]-1] = 0
+        # img[point[1] +1,point[0]] = 0
+        # img[point[1] -1,point[0]] = 0
+        # img[point[1] ,point[0]-1] = 0
+        # img[point[1] ,point[0]+1] = 0
+        # img[point[1]-1 ,point[0]-1] = 0
+        # img[point[1]-1 ,point[0]+1] = 0
+        # img[point[1]+1 ,point[0]+1] = 0
+        # img[point[1]+1 ,point[0]-1] = 0
         
-        
-        #print("dopo ",img[point[1],point[0]])
-    output = cv2.connectedComponentsWithStats(img,8, cv2.CV_32S)
+    output = cv2.connectedComponentsWithStats(img,4, cv2.CV_32S)
     (numLabels, labels, stats, centroids) = output
     imshow_components(labels)
     vessels = separate_labels(labels)
@@ -513,46 +535,91 @@ def connected_component_label(skeleton, branch_points):
     coords = vessels['coords']
     coords = vessel_clean(coords)
     all_tort = 0
-    curve_lengths = list()
-    segments_tort = list()
-    chord_lenghts = list()
-    for coord in coords:
+    # curve_lengths = list()
+    # segments_tort = list()
+    # chord_lenghts = list()
+    # for coord in coords:
        
-        #coords_array = np.array([coord], dtype=np.int32)
-        curve_length = tortuosity._curve_length(coord)
-        chord_length = tortuosity._chord_length(coord)
-        print(chord_length)
-        tortuosity_measure = curve_length/chord_length
-        #print(tortuosity_measure)
+    #     #coords_array = np.array([coord], dtype=np.int32)
+    #     curve_length = tortuosity._curve_length(coord)
+    #     chord_length = tortuosity._chord_length(coord)
+    #     print(chord_length)
+    #     tortuosity_measure = chord_length/(curve_length)
+    #     print("tortuosity: ",tortuosity_measure)
         
-        curve_lengths.append(curve_length)
-        chord_lenghts.append(chord_length)
-        segments_tort.append(tortuosity_measure)
+    #     curve_lengths.append(curve_length)
+    #     chord_lenghts.append(chord_length)
+    #     segments_tort.append(tortuosity_measure)
         
         
         # cv2.polylines(im, coords_array, 1, 255)
         # cv2.imshow('image',im)
         
     
-    all_tort = np.average(segments_tort, weights=curve_lengths)
-    print("weighted tortuosity: " ,all_tort)
-    # Showing Original Image
-    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    plt.axis("off")
-    plt.title("Orginal Image")
-    plt.show()
+    # all_tort = np.average(segments_tort, weights=curve_lengths)
+    # print("weighted tortuosity: " ,all_tort)
+    # # Showing Original Image
+    # plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    # plt.axis("off")
+    # plt.title("Orginal Image")
+    # plt.show()
     
     #Showing Image after Component Labeling
-    plt.imshow(cv2.cvtColor(labeled_img, cv2.COLOR_BGR2RGB))
-    plt.axis('off')
-    plt.title("Image after Component Labeling")
-    plt.show()
+    return vessels
     
 def vessel_clean(vessels):
     clean_vessels = list()
     for vessel in vessels:
-        if len(vessel) > 1:
+        if len(vessel) > 10:
             clean_vessels.append(vessel)
     return clean_vessels
             
              
+def principal_boxes(skeleton: np.ndarray, landmarks: list, size: int):
+    junct = landmarks.copy()
+    bifurcations_coordinates = []
+    crossings_coordinates = []
+    while True:
+        if junct:
+            junct = boxes_auxiliary(skeleton, junct, size, bifurcations_coordinates, crossings_coordinates)
+        else:
+            break
+
+    return bifurcations_coordinates, crossings_coordinates             
+
+def vessel_number(vessels: list, landmarks: list, skeleton_rgb: np.ndarray):
+    skeleton = skeleton_rgb.copy()
+    length = len(vessels)
+    final_landmarks = []
+    for v in range(0, length):
+        if len(vessels[v]) == 3:
+            skeleton[landmarks[v][0], landmarks[v][1]] = [0, 0, 255]
+            final_landmarks.append(landmarks[v])
+        elif len(vessels[v]) >= 4:
+            skeleton[landmarks[v][0], landmarks[v][1]] = [255, 0, 0]
+            final_landmarks.append(landmarks[v])
+
+    return skeleton, final_landmarks
+
+def boxes_auxiliary(skeleton: np.ndarray, landmarks: list, size: int, bifurcations_coordinates: list, crossings_coordinates: list):
+    x = landmarks[0][0]
+    y = landmarks[0][1]
+    num_bifurcations = 0
+    num_crossings = 0
+    box = []
+    for i in range(-3, 4):
+        for j in range(-3, 4):
+            box.append([x + i, y + j])
+            if all(skeleton[x + i, y + j] == [0, 0, 255]):
+                num_bifurcations += 1
+            elif all(skeleton[x + i, y + j] == [255, 0, 0]):
+                num_crossings += 1
+
+    landmarks = [val for val in landmarks if val not in box]
+
+    if num_bifurcations > num_crossings:
+        bifurcations_coordinates.append([y - 3 - size, x - 3 - size, y + 3 - size, x + 3 - size])
+    else:
+        crossings_coordinates.append([y - 3 - size, x - 3 - size, y + 3 + size, x + 3 + size])
+
+    return landmarks

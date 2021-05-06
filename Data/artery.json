@@ -1,0 +1,292 @@
+{
+    "['251_Arteria.jpg']": {
+        "chord": 886.2037011883893,
+        "arch": 999.4611988560816,
+        "distance_tortuosity": 1.1278007500034306,
+        "linear_reg_tort": 0.6340428915042837,
+        "squared_tort": 0.006325234780582061,
+        "distance_inflection_tort": 10.260313887348103,
+        "tortuosity_density": 0.8889036818127383,
+        "rank": 13
+    },
+    "['1_Arteria.jpg']": {
+        "chord": 903.2590990408013,
+        "arch": 1013.0902497424058,
+        "distance_tortuosity": 1.121594292067733,
+        "linear_reg_tort": 1.6882818468624463,
+        "squared_tort": 0.004030042799700178,
+        "distance_inflection_tort": 6.179502555205609,
+        "tortuosity_density": 0.8000160170193517,
+        "rank": 12
+    },
+    "['8_Arteria.jpg']": {
+        "chord": 905.190587666487,
+        "arch": 1128.5233193341744,
+        "distance_tortuosity": 1.2467245403461633,
+        "linear_reg_tort": 0.9939157867618715,
+        "squared_tort": 0.02306603522978788,
+        "distance_inflection_tort": 10.206551200788823,
+        "tortuosity_density": 0.8889618092492706,
+        "rank": 30
+    },
+    "['10_Arteria.jpg']": {
+        "chord": 894.6066174581988,
+        "arch": 1039.2281217570098,
+        "distance_tortuosity": 1.1616593276603708,
+        "linear_reg_tort": 1.24038911292005,
+        "squared_tort": 0.015089743024487108,
+        "distance_inflection_tort": 8.163068354387166,
+        "tortuosity_density": 0.8571585780487432,
+        "rank": 26
+    },
+    "['11_Arteria.jpg']": {
+        "chord": 913.0,
+        "arch": 1098.8530162631334,
+        "distance_tortuosity": 1.2035629970023367,
+        "linear_reg_tort": 1.0965951616643679,
+        "squared_tort": 0.006698019257469431,
+        "distance_inflection_tort": 16.13994646729135,
+        "tortuosity_density": 0.9333609156757616,
+        "rank": 24
+    },
+    "['14_Arteria.jpg']": {
+        "chord": 891.5391186033286,
+        "arch": 1113.2954119360804,
+        "distance_tortuosity": 1.2487342268056076,
+        "linear_reg_tort": 0.9783470558914108,
+        "squared_tort": 0.005465392015231644,
+        "distance_inflection_tort": 13.197606110469065,
+        "tortuosity_density": 0.916681868954776,
+        "rank": 29
+    },
+    "['15_Arteria.jpg']": {
+        "chord": 906.1241636773627,
+        "arch": 1167.4567641447288,
+        "distance_tortuosity": 1.288407053848767,
+        "linear_reg_tort": 1.6726472618040005,
+        "squared_tort": 0.015902810976120205,
+        "distance_inflection_tort": 18.700621512744906,
+        "tortuosity_density": 0.9413547277520652,
+        "rank": 28
+    },
+    "['26_Arteria.jpg']": {
+        "chord": 881.0022701446347,
+        "arch": 970.3432796429677,
+        "distance_tortuosity": 1.1014083760347924,
+        "linear_reg_tort": 1.132263976460567,
+        "squared_tort": 4.17176863618444e-05,
+        "distance_inflection_tort": 5.039784789330585,
+        "tortuosity_density": 0.7500023950330593,
+        "rank": 19
+    },
+    "['32_Arteria.jpg']": {
+        "chord": 883.8608487765481,
+        "arch": 944.7515645517738,
+        "distance_tortuosity": 1.068891744508778,
+        "linear_reg_tort": 1.1301231449319613,
+        "squared_tort": 0.0012443272311662753,
+        "distance_inflection_tort": 15.117458984384706,
+        "tortuosity_density": 0.9285934624781035,
+        "rank": 17
+    },
+    "['35_Arteria.jpg']": {
+        "chord": 837.0167262366983,
+        "arch": 883.7921197888005,
+        "distance_tortuosity": 1.0558834633596972,
+        "linear_reg_tort": 2.0062155837796527,
+        "squared_tort": 0.0012172855540416466,
+        "distance_inflection_tort": 16.25316564212536,
+        "tortuosity_density": 0.9333680034319897,
+        "rank": 18
+    },
+    "['48_Arteria.jpg']": {
+        "chord": 897.0,
+        "arch": 974.4287475250393,
+        "distance_tortuosity": 1.086319673940958,
+        "linear_reg_tort": 1.1954079069911199,
+        "squared_tort": 0.0018441549899040498,
+        "distance_inflection_tort": 23.06787202930266,
+        "tortuosity_density": 0.9545534582832668,
+        "rank": 23
+    },
+    "['56_Arteria.jpg']": {
+        "chord": 891.0005611670512,
+        "arch": 903.8533129270809,
+        "distance_tortuosity": 1.0144250770652656,
+        "linear_reg_tort": 0.7317351355379708,
+        "squared_tort": 0.000393875093655303,
+        "distance_inflection_tort": 9.014964461784428,
+        "tortuosity_density": 0.8750011035294606,
+        "rank": 4
+    },
+    "['73_Arteria.jpg']": {
+        "chord": 835.3167064054209,
+        "arch": 867.8978378471144,
+        "distance_tortuosity": 1.039004525100304,
+        "linear_reg_tort": 0.8032837609474328,
+        "squared_tort": 0.0020269944640961216,
+        "distance_inflection_tort": 14.027545504024847,
+        "tortuosity_density": 0.9230810316983791,
+        "rank": 9
+    },
+    "['102_Arteria.jpg']": {
+        "chord": 874.6913741429031,
+        "arch": 895.5269562464921,
+        "distance_tortuosity": 1.0238204956851271,
+        "linear_reg_tort": 3.115496594410335,
+        "squared_tort": 3.096686086977683e-05,
+        "distance_inflection_tort": 11.164578624165149,
+        "tortuosity_density": 0.9000121866706042,
+        "rank": 2
+    },
+    "['110_Arteria.jpg']": {
+        "chord": 898.0,
+        "arch": 990.3400190105348,
+        "distance_tortuosity": 1.1028285289649609,
+        "linear_reg_tort": 1.2550477228455006,
+        "squared_tort": 0.00011756335744400332,
+        "distance_inflection_tort": 16.17837790352699,
+        "tortuosity_density": 0.9333658158049418,
+        "rank": 8
+    },
+    "['127_Arteria.jpg']": {
+        "chord": 885.068358941839,
+        "arch": 943.308798865675,
+        "distance_tortuosity": 1.0658033239302176,
+        "linear_reg_tort": 0.890467736900027,
+        "squared_tort": 0.0007414715505760646,
+        "distance_inflection_tort": 7.048255279592916,
+        "tortuosity_density": 0.8333485045902347,
+        "rank": 15
+    },
+    "['144_Arteria.jpg']": {
+        "chord": 882.2998356567907,
+        "arch": 958.0084241182016,
+        "distance_tortuosity": 1.0858082313990831,
+        "linear_reg_tort": 1.0457715041702926,
+        "squared_tort": 0.0007029573791739409,
+        "distance_inflection_tort": 15.121255004527077,
+        "tortuosity_density": 0.9285830629421155,
+        "rank": 7
+    },
+    "['155_Arteria.jpg']": {
+        "chord": 901.0355153932613,
+        "arch": 943.2971322771036,
+        "distance_tortuosity": 1.0469033863392132,
+        "linear_reg_tort": 1.3240654194428134,
+        "squared_tort": 0.003879401772150088,
+        "distance_inflection_tort": 14.07322740397242,
+        "tortuosity_density": 0.92310290489429,
+        "rank": 10
+    },
+    "['169_Arteria.jpg']": {
+        "chord": 799.1226439039255,
+        "arch": 893.6433238525535,
+        "distance_tortuosity": 1.1182805676571366,
+        "linear_reg_tort": 0.692431228669539,
+        "squared_tort": 0.0004418511349804466,
+        "distance_inflection_tort": 1.0177732139036617,
+        "tortuosity_density": 0,
+        "rank": 14
+    },
+    "['179_Arteria.jpg']": {
+        "chord": 908.0049559336117,
+        "arch": 1087.8814933311967,
+        "distance_tortuosity": 1.1981008321839342,
+        "linear_reg_tort": 2.184525701065453,
+        "squared_tort": 0.006519235067652531,
+        "distance_inflection_tort": 19.38391158661174,
+        "tortuosity_density": 0.944496256136221,
+        "rank": 22
+    },
+    "['182_Arteria.jpg']": {
+        "chord": 900.0449988750562,
+        "arch": 1106.0420063921658,
+        "distance_tortuosity": 1.2288741204879536,
+        "linear_reg_tort": 1.4470962850839952,
+        "squared_tort": 0.00200073567265067,
+        "distance_inflection_tort": 11.339020461305953,
+        "tortuosity_density": 0.9000723566605989,
+        "rank": 27
+    },
+    "['186_Arteria.jpg']": {
+        "chord": 891.0202017911828,
+        "arch": 939.4341911259679,
+        "distance_tortuosity": 1.0543354564099225,
+        "linear_reg_tort": 0.6568695500215358,
+        "squared_tort": 0.0007187215056921924,
+        "distance_inflection_tort": 8.057563318358842,
+        "tortuosity_density": 0.857157276113668,
+        "rank": 6
+    },
+    "['205_Arteria.jpg']": {
+        "chord": 886.2984824538514,
+        "arch": 1036.6882122497923,
+        "distance_tortuosity": 1.1696829372646156,
+        "linear_reg_tort": 1.170660408124231,
+        "squared_tort": 9.806975706211211e-05,
+        "distance_inflection_tort": 12.282049787621117,
+        "tortuosity_density": 0.9091039329999485,
+        "rank": 20
+    },
+    "['209_Arteria.jpg']": {
+        "chord": 867.0467115444243,
+        "arch": 911.3771274963475,
+        "distance_tortuosity": 1.0511280596093373,
+        "linear_reg_tort": 0.9225543088287181,
+        "squared_tort": 0.0009055305527810089,
+        "distance_inflection_tort": 7.0289827047000095,
+        "tortuosity_density": 0.8333409542916371,
+        "rank": 3
+    },
+    "['222_Arteria.jpg']": {
+        "chord": 887.1628937235822,
+        "arch": 935.7384133543217,
+        "distance_tortuosity": 1.0547537774341071,
+        "linear_reg_tort": 1.132435976963267,
+        "squared_tort": 0.002901572284100981,
+        "distance_inflection_tort": 9.025239753809394,
+        "tortuosity_density": 0.8750023602349482,
+        "rank": 11
+    },
+    "['230_Arteria.jpg']": {
+        "chord": 882.2046247895099,
+        "arch": 921.26719824482,
+        "distance_tortuosity": 1.044278359416479,
+        "linear_reg_tort": 1.0161118029661071,
+        "squared_tort": 0.00043365377651186115,
+        "distance_inflection_tort": 6.0345231617958675,
+        "tortuosity_density": 0.8000092909817834,
+        "rank": 5
+    },
+    "['238_Arteria.jpg']": {
+        "chord": 885.0203387493419,
+        "arch": 930.1261722211955,
+        "distance_tortuosity": 1.0509658721918125,
+        "linear_reg_tort": 0.6084765910860173,
+        "squared_tort": 0.00013560573364197469,
+        "distance_inflection_tort": 3.0164203621832537,
+        "tortuosity_density": 0.5,
+        "rank": 1
+    },
+    "['242_Arteria.jpg']": {
+        "chord": 878.0051252697788,
+        "arch": 973.3401573586142,
+        "distance_tortuosity": 1.1085814072663214,
+        "linear_reg_tort": 0.8687554111036747,
+        "squared_tort": 0.0005861249137945014,
+        "distance_inflection_tort": 12.187891641978693,
+        "tortuosity_density": 0.9091212109554935,
+        "rank": 16
+    },
+    "['243_Arteria.jpg']": {
+        "chord": 807.4899380178059,
+        "arch": 923.3568589661434,
+        "distance_tortuosity": 1.1434902349777423,
+        "linear_reg_tort": 1.5165456963835735,
+        "squared_tort": 0.0008122072925619804,
+        "distance_inflection_tort": 7.04338660236662,
+        "tortuosity_density": 0.8333431547381828,
+        "rank": 21
+    }
+}

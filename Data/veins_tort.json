@@ -1,0 +1,292 @@
+{
+    "['282_Vena.jpg']": {
+        "chord": 730.1342342336784,
+        "arch": 795.034030420823,
+        "distance_tortuosity": 1.0888874855392323,
+        "linear_reg_tort": 0.8555969394898734,
+        "squared_tort": 0.0023212915559299276,
+        "distance_inflection_tort": 9.093302763683468,
+        "tortuosity_density": 0.8750220475555632,
+        "rank": 25
+    },
+    "['3_Vena.jpg']": {
+        "chord": 855.0,
+        "arch": 938.4932209681918,
+        "distance_tortuosity": 1.097652890021277,
+        "linear_reg_tort": 1.4150299371341215,
+        "squared_tort": 0.002097455439459609,
+        "distance_inflection_tort": 8.254764367468166,
+        "tortuosity_density": 0.8572616397193887,
+        "rank": 3
+    },
+    "['4_Vena.jpg']": {
+        "chord": 859.0005820719797,
+        "arch": 871.7592243324143,
+        "distance_tortuosity": 1.0148528912863595,
+        "linear_reg_tort": 1.3096612866379986,
+        "squared_tort": 0.0006419496023279383,
+        "distance_inflection_tort": 10.012451842120367,
+        "tortuosity_density": 0.8888902602607565,
+        "rank": 16
+    },
+    "['6_Vena.jpg']": {
+        "chord": 884.0141401584027,
+        "arch": 890.3132322053506,
+        "distance_tortuosity": 1.0071255557584398,
+        "linear_reg_tort": 1.1967774661245332,
+        "squared_tort": 7.001733680010913e-06,
+        "distance_inflection_tort": 11.006884007792051,
+        "tortuosity_density": 0.9000000671610785,
+        "rank": 2
+    },
+    "['16_Vena.jpg']": {
+        "chord": 875.7288393104341,
+        "arch": 902.623375699988,
+        "distance_tortuosity": 1.0307110319796378,
+        "linear_reg_tort": 1.392251268586722,
+        "squared_tort": 0.0016284078142082903,
+        "distance_inflection_tort": 11.180543358728952,
+        "tortuosity_density": 0.9000258580524244,
+        "rank": 8
+    },
+    "['24_Vena.jpg']": {
+        "chord": 849.0588907726012,
+        "arch": 883.908434026093,
+        "distance_tortuosity": 1.0410449070520662,
+        "linear_reg_tort": 2.084647129543849,
+        "squared_tort": 0.004593451754588531,
+        "distance_inflection_tort": 11.083442452849987,
+        "tortuosity_density": 0.9000043408874113,
+        "rank": 12
+    },
+    "['29_Vena.jpg']": {
+        "chord": 759.455726161835,
+        "arch": 812.0336828431217,
+        "distance_tortuosity": 1.0692311017878648,
+        "linear_reg_tort": 0.9000362741118676,
+        "squared_tort": 0.0056129950515670605,
+        "distance_inflection_tort": 4.072067151031519,
+        "tortuosity_density": 0.666698418289267,
+        "rank": 15
+    },
+    "['38_Vena.jpg']": {
+        "chord": 799.9624991210526,
+        "arch": 826.9890360173607,
+        "distance_tortuosity": 1.033784754817886,
+        "linear_reg_tort": 2.23206011818043,
+        "squared_tort": 0.0053892838342612034,
+        "distance_inflection_tort": 16.17003842070819,
+        "tortuosity_density": 0.933335040876045,
+        "rank": 24
+    },
+    "['42_Vena.jpg']": {
+        "chord": 804.1591882208397,
+        "arch": 835.7961709739885,
+        "distance_tortuosity": 1.0393416915662481,
+        "linear_reg_tort": 0.8552016257966824,
+        "squared_tort": 0.000513434509761146,
+        "distance_inflection_tort": 13.027331301343247,
+        "tortuosity_density": 0.9166718616525698,
+        "rank": 18
+    },
+    "['43_Vena.jpg']": {
+        "chord": 797.1198153351853,
+        "arch": 953.640487597657,
+        "distance_tortuosity": 1.1963577736386537,
+        "linear_reg_tort": 3.2929529542177636,
+        "squared_tort": 0.013858364940298495,
+        "distance_inflection_tort": 17.713743335924296,
+        "tortuosity_density": 0.9334315142147186,
+        "rank": 28
+    },
+    "['49_Vena.jpg']": {
+        "chord": 867.0974570369815,
+        "arch": 1094.513599649641,
+        "distance_tortuosity": 1.2622728745967944,
+        "linear_reg_tort": 1.1573999717333485,
+        "squared_tort": 0.02536866669215355,
+        "distance_inflection_tort": 11.367762915777217,
+        "tortuosity_density": 0.9000510797094441,
+        "rank": 29
+    },
+    "['72_Vena.jpg']": {
+        "chord": 891.0808044167487,
+        "arch": 904.9521378449859,
+        "distance_tortuosity": 1.0155668637002193,
+        "linear_reg_tort": 1.0042214010758266,
+        "squared_tort": 0.0007036275942601391,
+        "distance_inflection_tort": 17.01688181962965,
+        "tortuosity_density": 0.9375009319173324,
+        "rank": 6
+    },
+    "['93_Vena.jpg']": {
+        "chord": 786.9434541312355,
+        "arch": 1059.5194753449905,
+        "distance_tortuosity": 1.3463730713849975,
+        "linear_reg_tort": 1.549728471623141,
+        "squared_tort": 0.017814487014871455,
+        "distance_inflection_tort": 10.283859050406178,
+        "tortuosity_density": 0.888949674272443,
+        "rank": 30
+    },
+    "['101_Vena.jpg']": {
+        "chord": 798.4910769695551,
+        "arch": 846.6636961488814,
+        "distance_tortuosity": 1.0603295648113586,
+        "linear_reg_tort": 0.9304342570166562,
+        "squared_tort": 0.0032642788817167706,
+        "distance_inflection_tort": 11.111480461583266,
+        "tortuosity_density": 0.9000303424027718,
+        "rank": 10
+    },
+    "['128_Vena.jpg']": {
+        "chord": 761.4519026176243,
+        "arch": 782.1374760667493,
+        "distance_tortuosity": 1.0271659619970934,
+        "linear_reg_tort": 1.4642391460328525,
+        "squared_tort": 0.0007254946828510319,
+        "distance_inflection_tort": 6.030055353815353,
+        "tortuosity_density": 0.8000098707174296,
+        "rank": 4
+    },
+    "['143_Vena.jpg']": {
+        "chord": 838.0053699111958,
+        "arch": 850.6672467372085,
+        "distance_tortuosity": 1.015109541395128,
+        "linear_reg_tort": 1.1592045716960069,
+        "squared_tort": 0.0002345293187745041,
+        "distance_inflection_tort": 5.00504948858821,
+        "tortuosity_density": 0.7500007941205197,
+        "rank": 1
+    },
+    "['152_Vena.jpg']": {
+        "chord": 882.0362804329536,
+        "arch": 912.2695950598629,
+        "distance_tortuosity": 1.0342767245493225,
+        "linear_reg_tort": 0.8849901910021429,
+        "squared_tort": 0.0008881775893037958,
+        "distance_inflection_tort": 18.037520861401987,
+        "tortuosity_density": 0.941181376877964,
+        "rank": 19
+    },
+    "['175_Vena.jpg']": {
+        "chord": 883.3261005993201,
+        "arch": 985.7996244803965,
+        "distance_tortuosity": 1.1160087127636669,
+        "linear_reg_tort": 1.6618304393723302,
+        "squared_tort": 0.005742271701426175,
+        "distance_inflection_tort": 8.16359101103095,
+        "tortuosity_density": 0.8571897028753573,
+        "rank": 23
+    },
+    "['181_Vena.jpg']": {
+        "chord": 862.0701827577614,
+        "arch": 918.1966320959025,
+        "distance_tortuosity": 1.0651065893018046,
+        "linear_reg_tort": 1.2730820963887712,
+        "squared_tort": 0.0021872775222831686,
+        "distance_inflection_tort": 15.118263301314729,
+        "tortuosity_density": 0.92858910684423,
+        "rank": 22
+    },
+    "['197_Vena.jpg']": {
+        "chord": 851.0587523784712,
+        "arch": 866.7501455283943,
+        "distance_tortuosity": 1.0184374969484422,
+        "linear_reg_tort": 0.884886892402744,
+        "squared_tort": 0.0010728905454116333,
+        "distance_inflection_tort": 13.021953631201923,
+        "tortuosity_density": 0.9166682358530475,
+        "rank": 13
+    },
+    "['213_Vena.jpg']": {
+        "chord": 865.000578034489,
+        "arch": 930.6136506843184,
+        "distance_tortuosity": 1.0758532124902387,
+        "linear_reg_tort": 1.5928807214147427,
+        "squared_tort": 0.0015048097024160034,
+        "distance_inflection_tort": 8.082836498178835,
+        "tortuosity_density": 0.857146823520589,
+        "rank": 9
+    },
+    "['221_Vena.jpg']": {
+        "chord": 869.0368231553828,
+        "arch": 978.2789855129654,
+        "distance_tortuosity": 1.1257048717002989,
+        "linear_reg_tort": 0.7345246932594283,
+        "squared_tort": 0.0033011439556092695,
+        "distance_inflection_tort": 10.17762791933577,
+        "tortuosity_density": 0.8889200581471656,
+        "rank": 17
+    },
+    "['224_Vena.jpg']": {
+        "chord": 833.1734513293136,
+        "arch": 871.1339587920995,
+        "distance_tortuosity": 1.04556135028333,
+        "linear_reg_tort": 1.5039820718804267,
+        "squared_tort": 0.0010487023928933744,
+        "distance_inflection_tort": 11.071121812998202,
+        "tortuosity_density": 0.9000132590913575,
+        "rank": 21
+    },
+    "['229_Vena.jpg']": {
+        "chord": 812.5176921150702,
+        "arch": 860.4822063379816,
+        "distance_tortuosity": 1.0590319628586236,
+        "linear_reg_tort": 0.9156031754961704,
+        "squared_tort": 0.0010892710969864238,
+        "distance_inflection_tort": 10.095873724169905,
+        "tortuosity_density": 0.8889091013644587,
+        "rank": 11
+    },
+    "['241_Vena.jpg']": {
+        "chord": 795.2659932374828,
+        "arch": 874.2506579975413,
+        "distance_tortuosity": 1.0993185493051405,
+        "linear_reg_tort": 1.3446497085152433,
+        "squared_tort": 0.005111497500415226,
+        "distance_inflection_tort": 13.274418650922806,
+        "tortuosity_density": 0.9166725180198978,
+        "rank": 20
+    },
+    "['247_Vena.jpg']": {
+        "chord": 859.6976212599404,
+        "arch": 1011.514086245829,
+        "distance_tortuosity": 1.1765928638529815,
+        "linear_reg_tort": 1.5846895137280175,
+        "squared_tort": 0.0062893142846040615,
+        "distance_inflection_tort": 10.312074861501152,
+        "tortuosity_density": 0.8889173133084214,
+        "rank": 14
+    },
+    "['250_Vena.jpg']": {
+        "chord": 785.3922586835192,
+        "arch": 806.1883308653105,
+        "distance_tortuosity": 1.0264785805460444,
+        "linear_reg_tort": 1.2223967284807273,
+        "squared_tort": 0.0020605092183592928,
+        "distance_inflection_tort": 5.13447385943358,
+        "tortuosity_density": 0.7500441036355446,
+        "rank": 7
+    },
+    "['270_Vena.jpg']": {
+        "chord": 835.1173570223528,
+        "arch": 873.4474813830884,
+        "distance_tortuosity": 1.0458978897258264,
+        "linear_reg_tort": 1.3278077821388015,
+        "squared_tort": 0.003451405055925147,
+        "distance_inflection_tort": 8.048602499617354,
+        "tortuosity_density": 0.8571481298264572,
+        "rank": 27
+    },
+    "['272_Vena.jpg']": {
+        "chord": 852.6388449982794,
+        "arch": 923.4584473845113,
+        "distance_tortuosity": 1.0830593196658485,
+        "linear_reg_tort": 1.2710092529566503,
+        "squared_tort": 0.0013807285052655637,
+        "distance_inflection_tort": 13.167244271817507,
+        "tortuosity_density": 0.9167141709357655,
+        "rank": 27
+    }
+}
