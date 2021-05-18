@@ -456,3 +456,228 @@ def distance(a,b):
     res = math.sqrt(res)
 
     return res
+
+# % ========================================= PARAMETER EXPLANATION ==========================================
+# % VTI: vessel tortuosity index.
+# % sd: standard deviation of the angels between lines tangent to every pixel along the centerline.
+# % mean_dm: average distance measure between inflection points along the centerline.
+# % num_inflection_pts: number of inflection points along the centerline.
+# % num_critical_pts: number of critical points along the centerline.
+# % len_arch: length of vessel (arch) which is number of centerline pixels.
+# % len_cord: length of vessel chord which is the shortest path connecting vessel end points.
+# % VTI = (len_arch * sd * num_critical_pts * (mean_dm)) / len_cord;
+
+#  compute mean standard deviation of angels between lines tangent to each pixel along centerline and a reference axis
+def sd_theta(x,y):
+    """
+    Compute standard deviation (SD) of angles between lines tangent to each pixel on the
+    centerline and a reference-axis (i.e. x-axis) for a curve defined by x & y coordinates.
+
+    Please cite the following paper if you use this code.
+    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence 
+    tomography angiography applied to sickle cell retinopathy." Biomedical optics express 8.8 (2017):3796-3806.
+
+
+    Args:
+        x ([array]): [the list of x points of the curve]
+   
+        y ([array]): [the list of y points of the curve]
+    """
+    
+    #compute ratio of derivative of y over x for determining tangent lines at each point on the curve
+    
+    x = np.array(x)
+    y = np.array(y)
+    dy = np.divide(np.diff(y),np.diff(x))
+    
+    #slope of reference axis (i.e. x-axis)
+    m1 = 0
+    slope = np.zeros(len(x)-1)
+    theta = np.zeros(len(x)-1)  
+
+    #repeat for all pixels of the curve
+    for k in range(0,len(x) -2):
+        # tangent line to the curve
+        # tan_line = np.multiply((x-x[k]),dy[k])+y[k]
+        tan_line = ((x-x[k])*dy[k])+y[k]
+        # slope of tangent line.
+        coefficients = np.polyfit(x,tan_line,1)
+        #save slopes in a vector
+        slope[k] = coefficients[0]     
+        m2 = coefficients[0]
+        #compute angle between the tangent line and the x-axis (m1 = 0)
+        angle = np.arctan((m1-m2)/(1+m1*m2))*(180/np.pi)
+        # save angle in a vector
+        theta[k] = angle
+    #remove NaNs, if any
+    theta_final = theta[~np.isnan(theta)]
+    #SD of angles between tangent lines and x axis. Note that SD is divided by 100 to lie in range of 0 and 1
+    
+    SD = np.std(abs(theta_final))/100 
+    return SD, slope
+
+def mean_distance_measure(x,y):
+    """[summary]
+    Mean distance measure (DM) between points where the convexity of a curve changes. The curve or vessel 
+    centerline is defined by x & y coordinates.
+
+    Distance measure is the ratio of vessel length to its chord length. This can be used as a rough approximation 
+    of tortuosity. However, this global estimation may not match human perception of tortuosity (Grisan, et al
+    2008). In the current work, we used local distance measure between inflection points and showed that it better 
+    matches with visual perception of tortuosity.
+
+    Please cite the following paper if you use this code :)
+    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence 
+    tomography angiography applied to sickle cell retinopathy." Biomedical optics express 8.8 (2017):3796-3806.
+
+    Args:
+        x ([array]): [the list of x points of the curve]
+        y ([array]): [the list of y points of the curve]
+    """
+    # index init
+    idx_ifp = 0
+    N= 0
+    DM = []
+  
+    
+    # curvature approx
+    dx = np.diff(x)  # 1st derivative of xvalues
+    dy = np.diff(y)  # 1st derivative of yvalues
+
+    # dx2 = (dx[0:len(dx)-2]+ dx[1:])/2  # 2nd derivative of x values
+    # dy2 = (dy[0:len(dy)-2]+ dy[1:])/2  # 2nd derivative of y values
+    # dy2=dy/dx
+
+    dx2=0.5*(dx[:-1]+dx[1:])
+    dy2=0.5*(dy[:-1]+dy[1:])
+    
+    # remove the last element to match length of the 1st and 2nd derivatives to enable vector multiplication
+    dx = dx[:-1]
+    dy = dy[:-1]
+    
+    k = np.divide((((dx*dy2)-(dx2*dy))),((((dx)**2)+((dy)**2))**(3/2)))# curvature of the curve based on x and y coordinates
+    k = k+np.finfo(float).eps# adding epsilon to avoid zero values. Due to discrete integral, inflection points can be very close to zero
+    curvature = np.mean(abs(k));
+
+    #Detecting points of changes in sign of the curvature (inflection points).
+    # *** The DM between the 1st point on the curve and the first inflection point was computed separately. Similarly, DM between the last inflection
+    # point and the end point of the vessel segment was computed separetly.
+    
+    for i in range(0, len(k) -1 ):
+        previous = k[i]
+        current = k[i+1]
+        if previous*current < 0: # point off convexity change
+            N = N+1 # count number of inflection point
+            if N== 1:
+                idx = i+1
+                chord_len = np.sqrt((x[idx]-x[0])**2 + (y[idx]-y[0])**2) # chord length between the 1st point and the 1st inflection point
+                
+                coord = [(a,b) for a,b in zip(x[0:idx+1],y[0:idx+1]) ]
+                arc_length = _curve_length(coord) #arc length between the 1st point and 1st inflection point
+                dm = arc_length/chord_len
+                DM.insert(idx_ifp,dm ) # DM between the 1st curve point and the 1st inflection point
+                previous_pt = idx # record index of the inflection point
+            elif N>1 : # compute DM for the 2nd and the rest of inflection point
+                idx_ifp += 1
+                idx = i+1  # index for saving value 
+                chord_len = np.sqrt((x[idx]-x[previous_pt])**2 + (y[idx]- y[previous_pt])**2) #chord length between inflection points
+                coord = [(a,b) for a,b in zip(x[previous_pt :idx+1],y[previous_pt:idx+1]) ] #
+                arc_length = _curve_length(coord) # arc length between  inflection points
+                DM.insert(idx_ifp,arc_length/chord_len)
+                previous_pt = idx
+    if N >= 1:
+        idx_ifp = idx_ifp+1
+        chord_len = np.sqrt((x[len(x)-1]-x[previous_pt])**2 + (y[len(y)-1]- y[previous_pt])**2) 
+        coord = [(a,b) for a,b in zip(x[previous_pt:],y[previous_pt:]) ]
+        arc_length = _curve_length(coord)
+        DM.insert(idx_ifp, arc_length/chord_len)
+        
+    if N < 1:
+        print(len(x))
+        chord_len = np.sqrt((x[(len(x)-1)]-x[0])**2 +(y[(len(y)-1)]-y[0])**2 )
+        coord = [(a,b) for a,b in zip(x,y) ]
+        arc_length = _curve_length(coord)
+        DM.insert(idx_ifp, arc_length/chord_len)
+    if N >=1 :
+        DM.pop(0)
+        DM = DM[:-1]
+        DM = np.array(DM)
+        # DM = DM[~np.isnan(DM)]
+        ipf =  len(DM)+1
+    else:
+        ipf =1 
+        
+    
+    mean_dm = np.mean(DM)
+    
+    if np.isnan(mean_dm):
+        mean_dm = 1
+    return mean_dm , ipf, curvature,DM
+    
+def num_critical_points(x,y):
+    
+    """
+    Determine number of critical points in a curve defined by x and y coordinates
+    A critical point is a point on the curve where the derivative vanishes (either zero or doesn't exist).
+    In such a point, there is a change in sign of the slope of tangent lines.
+
+    Please cite the following paper if you use this code
+    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence 
+    tomography angiography applied to sickle cell retinopathy." Biomedical optics express 8.8 (2017):3796-3806.
+        
+    """
+    N = 0
+    x = np.array(x)
+    y = np.array(y)
+    dy = np.diff(y)/np.diff(x) # compute ratio of derivative of y over x to determine tangent lines at each point on the curve
+    slope = np.zeros( len(x)-1) 
+    ######## matlab i numeri piccoli li mette a 0 ecco il perché delal differenza tra il valore calcolato in  python e matlab: proviamo con una epsilon piccola
+    # epsilon=0.00000000000000004 # MSE 0.062
+    epsilon=0.00000000000000001 # MSE 0.0568
+    # epsilon=0.000000000000000009 # MSE 0.069
+    # epsilon=0.000000000000000005 # MSE 0.06901
+    # epsilon=0.0000000000000000001 # MSE 0.06901
+        
+    # compute slope of tangent lines for every pixel along the curve
+    for k in range(0, len(x)-1):
+        tang = (x - x[k])*dy[k]+y[k] # tangent line to the curve
+        coefficients = np.polyfit(x,tang,1) # slope of the tangent line
+        slope[k] = coefficients[0] # save slope    
+    slope[np.abs(slope) < epsilon] = 0
+    for ii in range(0,len(slope)-1):
+        previous = slope[ii]
+        current = slope[ii+1]
+        if previous*current < 0:
+            N = N+1 # add 1 to the number of crtical points(twists)
+    if N == 0:
+        N=1
+        
+    return N
+    
+def vessel_tort_index(arch_len, sd,num_crit_points,mean_dm, chord_len):
+    """
+    VTI: vessel tortuosity index.
+    sd: standard deviation of the angels between lines tangent to every pixel along the centerline.
+    mean_dm: average distance measure between inflection points along the centerline.
+    num_inflection_pts: number of inflection points along the centerline.
+    num_critical_pts: number of critical points along the centerline.
+    len_arch: length of vessel (arch) which is number of centerline pixels.
+    len_cord: length of vessel chord which is the shortest path connecting vessel end points.
+    VTI = (len_arch * sd * num_critical_pts * (mean_dm)) / len_cord;
+
+
+    Args:
+        arch_len ([type]): [description]
+        sd ([type]): [description]
+        num_crit_points ([type]): [description]
+        mean_dm ([type]): [description]
+        chord_len ([type]): [description]
+    """
+    arch_len = float(arch_len)
+    sd = float(sd)
+    num_crit_points = float(num_crit_points)
+    mean_dm = float(mean_dm)
+    chord_len = float(chord_len)
+    
+    
+    return (arch_len*sd*num_crit_points*(mean_dm))/chord_len

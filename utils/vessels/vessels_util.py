@@ -425,16 +425,18 @@ def separate_labels(labels):
     props = regionprops_table(labels,None,('label','coords','bbox','area','centroid'))
     
     vessels = dict(zip(props['label'],props['coords']))
-    # for prop in props:
-    #     print(prop['label']) # individual properties can be accessed via square brackets
-    #     cropped_shape = prop['filled_image'] # this gives you the content of the bounding box as an array of bool.
-    #     cropped_shape = 1 * cropped_shape # convert to integer
-    #     print(prop['coords'])
-    #     # save image with your favourite imsave. Data conversion might be neccessary if you use cv2   
-    #     plt.imshow(cropped_shape)
-    #     plt.axis("off")
-    #     plt.title("component Image")
-    #     plt.show() 
+    for region  in regionprops(labels):
+        length = len(region['coords'])
+        if  length < 15  : continue
+        # print(prop['label']) # individual properties can be accessed via square brackets
+        cropped_shape = region['filled_image'] # this gives you the content of the bounding box as an array of bool.
+        cropped_shape = 1 * cropped_shape # convert to integer
+        # print(prop['coords'])
+        # save image with your favourite imsave. Data conversion might be neccessary if you use cv2   
+        plt.imshow(cropped_shape)
+        plt.axis("off")
+        plt.title("component Image, length: "+ str(length))
+        plt.show() 
     return props
 
 def estimate_width(thresh):
@@ -467,7 +469,9 @@ def estimate_width(thresh):
 def connected_component_label(skeleton, branch_points):
     
     # Getting the input image
-    img = skeleton.copy()
+    img = skeleton
+    copy_img = img.copy()
+    object_image = np.zeros_like(img)
     # Converting those pixels with values 1-127 to 0 and others to 1
    # img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)[1]
     # Applying cv2.connectedComponents() 
@@ -480,18 +484,36 @@ def connected_component_label(skeleton, branch_points):
        # print("point ", point, point[0], point[1])
         #print("prima ", img[point[1],point[0]])
         img[point[1],point[0]] = 0
-        # img[point[1] +1,point[0]] = 0
-        # img[point[1] -1,point[0]] = 0
-        # img[point[1] ,point[0]-1] = 0
-        # img[point[1] ,point[0]+1] = 0
-        # img[point[1]-1 ,point[0]-1] = 0
-        # img[point[1]-1 ,point[0]+1] = 0
-        # img[point[1]+1 ,point[0]+1] = 0
-        # img[point[1]+1 ,point[0]-1] = 0
+        img[point[1] +1,point[0]] = 0
+        img[point[1] -1,point[0]] = 0
+        img[point[1] ,point[0]-1] = 0
+        img[point[1] ,point[0]+1] = 0
+        img[point[1]-1 ,point[0]-1] = 0
+        img[point[1]-1 ,point[0]+1] = 0
+        img[point[1]+1 ,point[0]+1] = 0
+        img[point[1]+1 ,point[0]-1] = 0
         
-    output = cv2.connectedComponentsWithStats(img,4, cv2.CV_32S)
+   #[object_image.astype(np.uint8) * 255    
+    output = cv2.connectedComponentsWithStats(img,8, cv2.CV_32S)
     (numLabels, labels, stats, centroids) = output
     imshow_components(labels)
+    # for label in np.unique(labels):
+        # if ( label == 0): continue
+        # m = (labels == label)# boolean array/mask of pixels with this label
+        # m = m.astype(np.uint8)
+        # # m = cv2.bitwise_not(m)
+        # (thresh, im_bw) = cv2.threshold(m, 254, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        # obj = img[m]  # orignal pixel values for the labeled object
+        # # m = np.array(m, dtype=np.uint8)
+        # # obj = np.array(obj, dtype=np.uint8)
+        # #cv2.imshow("obj_before", object_image)
+        
+        # object_image = cv2.bitwise_or(object_image , im_bw) 
+        # # object_image = cv2.bitwise_not(object_image)
+        # # object_image = object_image.astype(np.uint8)
+        # cv2.imshow("obj", object_image)
+        # # # cv2.imshow("obj", obj)
+        # cv2.waitKey(0)
     vessels = separate_labels(labels)
     vessels = pd.DataFrame(vessels)  
     # mask = np.zeros(img.shape, dtype="uint8")
