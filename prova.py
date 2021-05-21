@@ -11,9 +11,15 @@ from utils.math import tortuosity
 import math
 from plantcv import plantcv as pcv
 
-img = cv2.imread('sample/CHASE/train/label/hImage_01L_1stHO.png')
+PATH  = 'sample/CHASE/train/label/'
+imageName= 'hImage_01L_1stHO.png'
+
+
+
+img = cv2.imread(PATH + imageName)
 img1 = cv2.imread('sample/CHASE/train/image/hImage_01L.jpg')
 img2 = cv2.imread('sample/CHASE/train/image/hImage_01L.jpg',0)
+
 #functions.connected_component_label('myProject/sample/vessel1.png')
 if img is None:
     print('Error loading image')
@@ -49,14 +55,14 @@ cv2.waitKey(0)
 skeleton = image_util.get_uint_image(skeleton)
 
 skeleton_rgb = image_util.bin_to_bgr_(skeleton)
-#branch_locations = getSkeletonIntersection(skeleton)
+#branch_locations = vessels_util.getSkeletonIntersection(skeleton)
 branch_locations = vessels_util.getIntersections(skeleton)
-branch_locations2 = vessels_util.getIntersections(dist_on_skel)
-end_points = vessels_util.getEndPoints(dist_on_skel)
+# branch_locations2 = vessels_util.getIntersections(dist_on_skel)
+end_points = vessels_util.getEndPoints(skeleton)
 
 all_points = np.array( branch_locations)
 
-vessels_data = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
+vessels_data = vessels_util.connected_component_label(skeleton.copy(), branch_locations, imageName, PATH)
 vessels_coord = vessels_data["coords"]
 
 v_width = vessels_util.vessel_width(thresh, vessels_coord)
@@ -82,25 +88,25 @@ for el in vessels_coord[0]:
 # print("tortuosity111:" + tortuos)
 
 
-# for points in branch_locations:
+for points in branch_locations:
     
-#     if not points:
-#           print("List is empty")
-#           continue 
-#     #cv2.drawContours(skeleton, np.array([points]), 0, (255,0,0), 2)
-#     cv2.circle(skeleton,tuple(points) , 2, (255, 255, 0), 5)
-# #         cv2.circle(img,point , 2, (255, 0, 0), 5)
-    
-print(thresh[17][379])
-skel2 = skeleton.copy()
-for points in branch_locations2:
-        
     if not points:
           print("List is empty")
           continue 
     #cv2.drawContours(skeleton, np.array([points]), 0, (255,0,0), 2)
-    cv2.circle(skel2,tuple(points) , 2, (255, 255, 0), 5)
+    cv2.circle(skeleton,tuple(points) , 2, (255, 255, 0), 5)
 #         cv2.circle(img,point , 2, (255, 0, 0), 5)
+    
+
+# skel2 = skeleton.copy()
+# for points in branch_locations2:
+        
+#     if not points:
+#           print("List is empty")
+#           continue 
+#     #cv2.drawContours(skeleton, np.array([points]), 0, (255,0,0), 2)
+#     cv2.circle(skel2,tuple(points) , 2, (255, 255, 0), 5)
+# #         cv2.circle(img,point , 2, (255, 0, 0), 5)
     
     
 mask = np.zeros_like(gray)
@@ -128,106 +134,106 @@ skeleton_1 = pcv.morphology.skeletonize(mask=thresh)
 cv2.imshow("skeleton_1", skeleton_1)
 cv2.waitKey(0)
 
-pcv.params.line_thickness = 3
+# pcv.params.line_thickness = 3
 
-# Prune the skeleton  
+# # Prune the skeleton  
 
-# Inputs:
-#   skel_img = Skeletonized image
-#   size     = Pieces of skeleton smaller than `size` should get removed. (Optional) Default `size=0`. 
-#   mask     = Binary mask for debugging (optional). If provided, debug images will be overlaid on the mask.
-pruned, seg_img, edge_objects = pcv.morphology.prune(skel_img=skeleton, size=70, mask=thresh)
+# # Inputs:
+# #   skel_img = Skeletonized image
+# #   size     = Pieces of skeleton smaller than `size` should get removed. (Optional) Default `size=0`. 
+# #   mask     = Binary mask for debugging (optional). If provided, debug images will be overlaid on the mask.
+# pruned, seg_img, edge_objects = pcv.morphology.prune(skel_img=skeleton, size=70, mask=thresh)
 
-# pruned, seg_img, edge_objects = pcv.morphology.prune(skel_img=skeleton_1, size=70, mask=mask)
+# # pruned, seg_img, edge_objects = pcv.morphology.prune(skel_img=skeleton_1, size=70, mask=mask)
 
-branch_pts_mask = pcv.morphology.find_branch_pts(skel_img=skeleton, mask=thresh, label="default")
-tip_pts_mask = pcv.morphology.find_tips(skel_img=skeleton, mask=thresh, label="default")
-leaf_obj, stem_obj = pcv.morphology.segment_sort(skel_img=skeleton, 
-                                                     objects=edge_objects,
-                                                     mask=thresh)
-# all_objects = leaf_obj + stem_obj
-cv2.imshow("seg_img", seg_img)
-cv2.waitKey(0)
+# branch_pts_mask = pcv.morphology.find_branch_pts(skel_img=skeleton, mask=thresh, label="default")
+# tip_pts_mask = pcv.morphology.find_tips(skel_img=skeleton, mask=thresh, label="default")
+# leaf_obj, stem_obj = pcv.morphology.segment_sort(skel_img=skeleton, 
+#                                                      objects=edge_objects,
+#                                                      mask=thresh)
+# # all_objects = leaf_obj + stem_obj
+# cv2.imshow("seg_img", seg_img)
+# cv2.waitKey(0)
 
-segmented_img, labeled_img = pcv.morphology.segment_id(skel_img=skeleton,
-                                                           objects=leaf_obj,
-                                                           mask=thresh)
-cv2.imshow("labeled_img", labeled_img)
-cv2.imshow("segmented_img", segmented_img)
-cv2.waitKey(0)
+# segmented_img, labeled_img = pcv.morphology.segment_id(skel_img=skeleton,
+#                                                            objects=leaf_obj,
+#                                                            mask=thresh)
+# cv2.imshow("labeled_img", labeled_img)
+# cv2.imshow("segmented_img", segmented_img)
+# cv2.waitKey(0)
 
-labeled_img1  = pcv.morphology.segment_path_length(segmented_img=segmented_img, 
-                                                      objects=leaf_obj, label="default")
-cv2.imshow("labeled_img1", labeled_img1)
-cv2.waitKey(0)
-
-labeled_img2 = pcv.morphology.segment_euclidean_length(segmented_img=segmented_img, 
-                                                          objects=leaf_obj, label="default")
-cv2.imshow("labeled_img2", labeled_img2)
-cv2.waitKey(0)
-
-labeled_img3 = pcv.morphology.segment_curvature(segmented_img=segmented_img, 
-                                                   objects=leaf_obj, label="default")
-
-cv2.imshow("labeled_img3", labeled_img3)
-cv2.waitKey(0)
-
-pcv.outputs.save_results(filename="leaf.json")
-
-
-
-segmented_img, labeled_img = pcv.morphology.segment_id(skel_img=skeleton,
-                                                           objects=stem_obj,
-                                                           mask=thresh)
-cv2.imshow("labeled_img", labeled_img)
-cv2.imshow("segmented_img", segmented_img)
-cv2.waitKey(0)
-
-labeled_img1  = pcv.morphology.segment_path_length(segmented_img=segmented_img, 
-                                                      objects=stem_obj, label="default")
-cv2.imshow("labeled_img1", labeled_img1)
-cv2.waitKey(0)
+# labeled_img1  = pcv.morphology.segment_path_length(segmented_img=segmented_img, 
+#                                                       objects=leaf_obj, label="default")
+# cv2.imshow("labeled_img1", labeled_img1)
+# cv2.waitKey(0)
 
 # labeled_img2 = pcv.morphology.segment_euclidean_length(segmented_img=segmented_img, 
-#                                                           objects=stem_obj, label="default")
+#                                                           objects=leaf_obj, label="default")
 # cv2.imshow("labeled_img2", labeled_img2)
 # cv2.waitKey(0)
 
 # labeled_img3 = pcv.morphology.segment_curvature(segmented_img=segmented_img, 
-#                                                    objects=stem_obj, label="default")
+#                                                    objects=leaf_obj, label="default")
 
 # cv2.imshow("labeled_img3", labeled_img3)
 # cv2.waitKey(0)
 
-pcv.outputs.save_results(filename="stem.json")
-# skel_points = np.column_stack(np.where(skeleton>0)) 
-
-# # Extend the skeleton past the edges of the banana
-# x,y = zip(*skel_points)
-# z = np.polyfit(x,y,7)
-# f = np.poly1d(z)
-# x_new = np.linspace(0, img.shape[1],300)
-# y_new = f(x_new)
-# extension = list(zip(x_new, y_new))
-# imag = gray.copy()
-# for point in range(len(extension)-1):
-#     a = tuple(np.array(extension[point], int))
-#     b = tuple(np.array(extension[point+1], int))
-#     cv2.line(imag, a, b, (0,255,0), 1)
-#     cv2.line(mask, a, b, 255, 1)   
-# mask_px = np.count_nonzero(mask)
+# pcv.outputs.save_results(filename="leaf.json")
 
 
-# Find the distance between points in the contour of the banana
-# Only look at distances that cross the mid line
-def is_collision(mask_px, mask, a, b):
-    temp_image = mask.copy()
-    cv2.line(temp_image, a, b, 0, 2)
-    new_total = np.count_nonzero(temp_image)
-    if new_total != mask_px: return True
-    else: return False
 
-def distance(a,b): return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+# segmented_img, labeled_img = pcv.morphology.segment_id(skel_img=skeleton,
+#                                                            objects=stem_obj,
+#                                                            mask=thresh)
+# cv2.imshow("labeled_img", labeled_img)
+# cv2.imshow("segmented_img", segmented_img)
+# cv2.waitKey(0)
+
+# labeled_img1  = pcv.morphology.segment_path_length(segmented_img=segmented_img, 
+#                                                       objects=stem_obj, label="default")
+# cv2.imshow("labeled_img1", labeled_img1)
+# cv2.waitKey(0)
+
+# # labeled_img2 = pcv.morphology.segment_euclidean_length(segmented_img=segmented_img, 
+# #                                                           objects=stem_obj, label="default")
+# # cv2.imshow("labeled_img2", labeled_img2)
+# # cv2.waitKey(0)
+
+# # labeled_img3 = pcv.morphology.segment_curvature(segmented_img=segmented_img, 
+# #                                                    objects=stem_obj, label="default")
+
+# # cv2.imshow("labeled_img3", labeled_img3)
+# # cv2.waitKey(0)
+
+# pcv.outputs.save_results(filename="stem.json")
+# # skel_points = np.column_stack(np.where(skeleton>0)) 
+
+# # # Extend the skeleton past the edges of the banana
+# # x,y = zip(*skel_points)
+# # z = np.polyfit(x,y,7)
+# # f = np.poly1d(z)
+# # x_new = np.linspace(0, img.shape[1],300)
+# # y_new = f(x_new)
+# # extension = list(zip(x_new, y_new))
+# # imag = gray.copy()
+# # for point in range(len(extension)-1):
+# #     a = tuple(np.array(extension[point], int))
+# #     b = tuple(np.array(extension[point+1], int))
+# #     cv2.line(imag, a, b, (0,255,0), 1)
+# #     cv2.line(mask, a, b, 255, 1)   
+# # mask_px = np.count_nonzero(mask)
+
+
+# # Find the distance between points in the contour of the banana
+# # Only look at distances that cross the mid line
+# def is_collision(mask_px, mask, a, b):
+#     temp_image = mask.copy()
+#     cv2.line(temp_image, a, b, 0, 2)
+#     new_total = np.count_nonzero(temp_image)
+#     if new_total != mask_px: return True
+#     else: return False
+
+# def distance(a,b): return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 
 # distances = []
 # for point_a in cnt[:int(len(cnt)/2)]:
@@ -277,11 +283,13 @@ ax[3].axis('off')
 fig.tight_layout()
 plt.show()
 
-cv2.imshow("prova", img)
-cv2.imshow("prova1", res_img)
-cv2.imshow("Frame2", skel2)
-cv2.imshow("Frame3", gray)
-cv2.imshow("Frame4", dist_on_skel)
+# cv2.imshow("prova", img)
+# cv2.imshow("prova1", res_img)
+# cv2.imshow("Frame2", skeleton)
+plt.imshow(skeleton, cmap='gray')
+plt.show()
+# cv2.imshow("Frame3", gray)
+# cv2.imshow("Frame4", dist_on_skel)
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()

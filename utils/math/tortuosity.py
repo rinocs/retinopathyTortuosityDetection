@@ -117,15 +117,16 @@ def _curve_to_image(x, y):
     padding_x = (mm_values[1, 0] - mm_values[0, 0]) // 2
     padding_y = (mm_values[1, 1] - mm_values[0, 1]) // 2
 
-    image_curve = np.full([image_dim, image_dim], False)
+    image_curve = np.full([image_dim, image_dim], 0)
 
     for i in range(0, len(x)):
         x[i] = x[i] - mm_values[0, 0]
         y[i] = y[i] - mm_values[0, 1]
 
     for i in range(0, len(x)):       
-        image_curve[x[i], y[i]] = True
+        image_curve[x[i],y[i]] = 255
         
+    image_curve = np.asarray(image_curve, dtype="uint8")
     return image_curve
 
 def linear_regression_tortuosity(x, y, sampling_size=6, retry=True):

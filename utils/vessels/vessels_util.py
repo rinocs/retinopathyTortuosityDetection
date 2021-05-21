@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import scipy.ndimage as nd
 from skimage.measure import regionprops_table, regionprops, label
 from utils.math import tortuosity
+from utils.imageproc import image_util
 import math
 
 
@@ -294,7 +295,7 @@ def getSkeletonIntersection(skeleton):
         for y in range(1,len(image[x])-1):
             # If we have a white pixel
             if image[x][y] == 1:
-                nb = neighbours(x,y,image);
+                nb = image_util.neighbours(x,y,image);
                 valid = True;
                 if nb in validIntersection:
                     intersections.append((y,x));
@@ -415,28 +416,69 @@ def imshow_components(labels):
     cv2.waitKey()
     
     
-def separate_labels(labels):
+def separate_labels(labels, imageName, path, skel, writer):
     # generate dummy image:
     # labels = np.zeros((100,100), dtype=np.int) # this does not work on floats
     # # adding two rectangles, similar to output of your label function
     # labels[10:20, 10:20] = 1
     # labels[40:50, 40:60] = 2
-
+    
     props = regionprops_table(labels,None,('label','coords','bbox','area','centroid'))
     
     vessels = dict(zip(props['label'],props['coords']))
+    filename = imageName.split('.')[0]
+    file_ext = '.'+imageName.split('.')[-1]
+    i=0
     for region  in regionprops(labels):
-        length = len(region['coords'])
-        if  length < 15  : continue
+        
+        coord = region['coords']
+        if  len(region['coords']) < 80  : continue
+        blank_image = np.zeros(skel.shape)
         # print(prop['label']) # individual properties can be accessed via square brackets
-        cropped_shape = region['filled_image'] # this gives you the content of the bounding box as an array of bool.
-        cropped_shape = 1 * cropped_shape # convert to integer
-        # print(prop['coords'])
-        # save image with your favourite imsave. Data conversion might be neccessary if you use cv2   
-        plt.imshow(cropped_shape)
-        plt.axis("off")
-        plt.title("component Image, length: "+ str(length))
-        plt.show() 
+        # cropped_shape = region['image'] # this gives you the content of the bounding box as an array of bool.
+        # cropped_shape = 255 * cropped_shape # convert to integer
+        
+        x_coords = []
+        y_coords = []
+        for p in region['coords']:
+            x_coords.append(p[0])
+            y_coords.append(p[1])
+            blank_image[p[0]][p[1]] = 1
+            
+        # test_image = tortuosity._curve_to_image(x_coords,y_coords)
+        x, y, w, h = region['bbox']
+        roi = blank_image[ x:x+w,y:y+h]
+        
+        roi= cv2.copyMakeBorder(roi,20,20,20,20,cv2.BORDER_CONSTANT,value=[0])
+        # roi = np.asarray(roi, dtype= np.uint8)
+        # cv2.imwrite("roi.jpg", roi)
+        distance_tort = tortuosity.distance_measure_tortuosity(coord)
+        curve_length = tortuosity._curve_length(coord)
+        chord_length = tortuosity._chord_length(coord)
+        #compute mean standard deviation of angels between lines tangent to each pixel along centerline and a reference axis
+        sd, slope = tortuosity.sd_theta(x_coords, y_coords) 
+        #compute mean distance measure (ratio of actual length to chord length) between inflection points
+        mean_dm,num_inflection_pts,curvature,DM = tortuosity.mean_distance_measure(x_coords, y_coords)
+        
+        # compute number of critical points
+        num_cpts = tortuosity.num_critical_points(x_coords, y_coords)
+
+        #compute VTI index
+        VTI = tortuosity.vessel_tort_index(curve_length,sd,num_cpts,mean_dm,chord_length)
+        new_filename = filename+'_'+str(i)  
+        all_path= path+new_filename+file_ext
+        # image_util.save_image(all_path, roi)
+        writer.writerow({'image': new_filename, 'curve_length': curve_length, 'chord_length': chord_length,'sd_theta': sd,'num_inflection_pts': num_inflection_pts,'num_critical_points':num_cpts,'curvature': curvature,'VTI':VTI,'distance_tort': distance_tort})
+        cv2.imwrite(all_path, 255*roi)
+        
+        # cv2.imshow('splitted_vessel: '+str(distance_tort)+' VTI: '+str(VTI), roi) 
+        # # cv2.imshow('splitted_vessel2: '+str(distance_tort), test_image) 
+        # cv2.waitKey(0)
+        # plt.imshow(roi, cmap="gray")
+        # plt.axis("off")
+        # # plt.title("component Image, length: "+ str(length))
+        # plt.show() 
+        i+=1
     return props
 
 def estimate_width(thresh):
@@ -496,7 +538,7 @@ def connected_component_label(skeleton, branch_points):
    #[object_image.astype(np.uint8) * 255    
     output = cv2.connectedComponentsWithStats(img,8, cv2.CV_32S)
     (numLabels, labels, stats, centroids) = output
-    imshow_components(labels)
+    # imshow_components(labels)
     # for label in np.unique(labels):
         # if ( label == 0): continue
         # m = (labels == label)# boolean array/mask of pixels with this label
@@ -514,8 +556,8 @@ def connected_component_label(skeleton, branch_points):
         # cv2.imshow("obj", object_image)
         # # # cv2.imshow("obj", obj)
         # cv2.waitKey(0)
-    vessels = separate_labels(labels)
-    vessels = pd.DataFrame(vessels)  
+     
+    
     # mask = np.zeros(img.shape, dtype="uint8")
     # for i in range(1, numLabels):
     # 	# extract the connected component statistics for the current
@@ -542,52 +584,10 @@ def connected_component_label(skeleton, branch_points):
     # cv2.imshow("Characters", mask)
     # cv2.waitKey(0)
     # Map component labels to hue val, 0-179 is the hue range in OpenCV
-    label_hue = np.uint8(179*labels/np.max(labels))
-    blank_ch = 255*np.ones_like(label_hue)
-    labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
-
-    # Converting cvt to BGR
-    labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_HSV2BGR)
-
-    # set bg label to black
-    labeled_img[label_hue==0] = 0
     
-    im = np.zeros((1000,1000), dtype="uint8")
-    
-    coords = vessels['coords']
-    coords = vessel_clean(coords)
-    all_tort = 0
-    # curve_lengths = list()
-    # segments_tort = list()
-    # chord_lenghts = list()
-    # for coord in coords:
-       
-    #     #coords_array = np.array([coord], dtype=np.int32)
-    #     curve_length = tortuosity._curve_length(coord)
-    #     chord_length = tortuosity._chord_length(coord)
-    #     print(chord_length)
-    #     tortuosity_measure = chord_length/(curve_length)
-    #     print("tortuosity: ",tortuosity_measure)
-        
-    #     curve_lengths.append(curve_length)
-    #     chord_lenghts.append(chord_length)
-    #     segments_tort.append(tortuosity_measure)
-        
-        
-        # cv2.polylines(im, coords_array, 1, 255)
-        # cv2.imshow('image',im)
-        
-    
-    # all_tort = np.average(segments_tort, weights=curve_lengths)
-    # print("weighted tortuosity: " ,all_tort)
-    # # Showing Original Image
-    # plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    # plt.axis("off")
-    # plt.title("Orginal Image")
-    # plt.show()
     
     #Showing Image after Component Labeling
-    return vessels
+    return labels
     
 def vessel_clean(vessels):
     clean_vessels = list()

@@ -219,3 +219,13 @@ def border(image,size):
     x = cv2.resize(new_im,(size,size))
 
     return x
+
+
+def load_image(path):
+    img = cv2.imread(path)
+    if img is None:
+        print('Error loading image')
+        exit()  
+    return img
+def save_image(path, image):
+    cv2.imwrite(path, image)
