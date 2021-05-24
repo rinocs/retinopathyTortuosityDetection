@@ -12,8 +12,7 @@ import math
 import csv
 import os 
 import logging
-from progress.bar import Bar
-bar = Bar('Processing', max=100)
+
 trainPath  = 'sample/CHASE/train/label/'
 trainSplittedPath ='sample/CHASE/train/label/splitted_vessels/'
 testSplittedPath ='sample/CHASE/test/label/splitted_vessels/'
@@ -51,8 +50,8 @@ validateSplittedPath = 'sample/CHASE/validate/label/splitted_vessels/'
 #             branch_locations = vessels_util.getIntersections(skeleton)
 #             labels = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
 #             props = vessels_util.separate_labels(labels,filename, trainSplittedPath,skeleton, writer)
-#             bar.next()
-#     bar.finish()
+#             
+#     
        
 
 with open(testSplittedPath+'test_splitted.csv', mode='w+') as csv_file:
@@ -84,8 +83,7 @@ with open(testSplittedPath+'test_splitted.csv', mode='w+') as csv_file:
             branch_locations = vessels_util.getIntersections(skeleton)
             labels = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
             props = vessels_util.separate_labels(labels,filename, testSplittedPath,skeleton, writer)
-            bar.next()
-    bar.finish()
+  
        
 with open(validateSplittedPath+'validate_splitted.csv', mode='w+') as csv_file:
     fieldnames = ['image', 'curve_length', 'chord_length','sd_theta','num_inflection_pts','num_critical_points','curvature','VTI','distance_tort']
@@ -116,6 +114,4 @@ with open(validateSplittedPath+'validate_splitted.csv', mode='w+') as csv_file:
             branch_locations = vessels_util.getIntersections(skeleton)
             labels = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
             props = vessels_util.separate_labels(labels,filename, validateSplittedPath,skeleton, writer)
-            bar.next()
-    bar.finish()
-       
+        

@@ -62,14 +62,14 @@ end_points = vessels_util.getEndPoints(skeleton)
 
 all_points = np.array( branch_locations)
 
-vessels_data = vessels_util.connected_component_label(skeleton.copy(), branch_locations, imageName, PATH)
-vessels_coord = vessels_data["coords"]
+vessels_data = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
+# vessels_coord = vessels_data["coords"]
 
-v_width = vessels_util.vessel_width(thresh, vessels_coord)
+# v_width = vessels_util.vessel_width(thresh, vessels_coord)
 
-active_neigh = []
-for el in vessels_coord[0]:
-    active_neigh.append(image_util.active_neihbours(el[0], el[1], thresh))
+# active_neigh = []
+# for el in vessels_coord[0]:
+#     active_neigh.append(image_util.active_neihbours(el[0], el[1], thresh))
 
 
 

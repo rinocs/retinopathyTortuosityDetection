@@ -1,9 +1,13 @@
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
+from keras.models import Sequential, Model
+from keras.layers import Input, Dense, Activation, BatchNormalization, Flatten, Conv2D
+from keras.layers import AveragePooling2D, MaxPooling2D, Dropout, GlobalAveragePooling2D
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 from keras.optimizers import Adam
+
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
+
+from utils.models import dataprepare
 
 def createModelOne():
     model = Sequential()
@@ -155,88 +159,74 @@ def createModelTwo():
 
     return model
 
-def create_cnn(width, height, depth, filters=(16, 32, 64), regress=False):
-    """[summary]
-        The create_cnn function accepts five parameters:
+# def create_cnn(width, height, depth, filters=(16, 32, 64), regress=False):
+#     # initialize the input shape and channel dimension, assuming
+# 	## TensorFlow/channels-last ordering
+#     inputShape = (height, width, depth)
+#     chanDim = -1
+#     # define the model input
+#     inputs = Input(shape=inputShape)
+# 	# loop over the number of filters
+# 	for (i, f) in enumerate(filters):
+#         # if this is the first CONV layer then set the input
+#         # appropriately
+#         if i== 0:
+#             x = inputs
+#         # CONV => RELU => BN => POOL
+#         x = Conv2D(f, (3, 3), padding="same")(x)
+#         x = Activation("relu")(x)
+#         x = BatchNormalization(axis=chanDim)(x)
+#         x = MaxPooling2D(pool_size=(2, 2))(x)
+#     # flatten the volume, then FC => RELU => BN => DROPOUT
+# 	x = Flatten()(x)
+# 	x = Dense(16)(x)
+# 	x = Activation("relu")(x)
+# 	x = BatchNormalization(axis=chanDim)(x)
+# 	x = Dropout(0.5)(x)
+# 	# apply another FC layer, this one to match the number of nodes
+# 	# coming out of the MLP
+# 	x = Dense(4)(x)
+# 	x = Activation("relu")(x)
+# 	# check to see if the regression node should be added
+# 	if regress:
+# 		x = Dense(1, activation="linear")(x)
+# 	# construct the CNN
+# 	model = Model(inputs, x)
+# 	# return the CNN
+# 	return model
 
-        width : The width of the input images in pixels.
-        height : How many pixels tall the input images are.
-        depth : The number of channels for the image. For RGB images it is three.
-        filters : A tuple of progressively larger filters so that our network can learn more discriminate features.
-        regress : A boolean indicating whether or not a fully-connected linear activation layer will be appended to the CNN for regression purposes.
-        Args:
-        width ([type]): [description]
-        height ([type]): [description]
-        depth ([type]): [description]
-        filters (tuple, optional): [description]. Defaults to (16, 32, 64).
-        regress (bool, optional): [description]. Defaults to False.
-    """
-    # initialize the input shape and channel dimension, assuming
-	# TensorFlow/channels-last ordering
 
-	inputShape = (height, width, depth)
-	chanDim = -1
-    # define the model input
-	inputs = Input(shape=inputShape)
-	# loop over the number of filters
-	for (i, f) in enumerate(filters):
-		# if this is the first CONV layer then set the input
-		# appropriately
-		if i == 0:
-			x = inputs
-		# CONV => RELU => BN => POOL
-		x = Conv2D(f, (3, 3), padding="same")(x)
-		x = Activation("relu")(x)
-		x = BatchNormalization(axis=chanDim)(x)
-		x = MaxPooling2D(pool_size=(2, 2))(x)
-    # flatten the volume, then FC => RELU => BN => DROPOUT
-	x = Flatten()(x)
-	x = Dense(16)(x)
-	x = Activation("relu")(x)
-	x = BatchNormalization(axis=chanDim)(x)
-	x = Dropout(0.5)(x)
-	# apply another FC layer, this one to match the number of nodes
-	# coming out of the MLP
-	x = Dense(4)(x)
-	x = Activation("relu")(x)
-	# check to see if the regression node should be added
-	if regress:
-		x = Dense(1, activation="linear")(x)
-	# construct the CNN
-	model = Model(inputs, x)
-	# return the CNN
-	return model
 
-def create_model_reg():
+def create_model_reg(image_size):
     nb_filters = 8
     nb_conv = 5
 
     model = Sequential()
-    model.add(Convolution2D(nb_filters, nb_conv, nb_conv,
+    model.add(Conv2D(nb_filters, nb_conv, nb_conv,
                             border_mode='valid',
-                            input_shape=(3, image_size, image_size) ) )
+                            input_shape=(image_size, image_size,1) ) )
     model.add(Activation('relu'))
 
-    model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters, nb_conv, nb_conv))
     model.add(Activation('relu'))
 
-    model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters, nb_conv, nb_conv))
     model.add(Activation('relu'))
 
-    model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters, nb_conv, nb_conv))
     model.add(Activation('relu'))
     model.add(Dropout(0.25))
 
-    model.add(Convolution2D(nb_filters*2, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters*2, nb_conv, nb_conv))
     model.add(Activation('relu'))
 
-    model.add(Convolution2D(nb_filters*2, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters*2, nb_conv, nb_conv))
     model.add(Activation('relu'))
 
-    model.add(Convolution2D(nb_filters*2, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters*2, nb_conv, nb_conv))
     model.add(Activation('relu'))
 
-    model.add(Convolution2D(nb_filters*2, nb_conv, nb_conv))
+    model.add(Conv2D(nb_filters*2, nb_conv, nb_conv))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
@@ -252,52 +242,50 @@ def create_model_reg():
     model.add(Dense(1))
     model.add(Activation('linear'))
 
-    model.compile(loss='mean_squared_error', optimizer=Adadelta())
+    model.compile(loss='mean_squared_error', optimizer=Adam())
     return model
 
-def train_model(batch_size = 50, nb_epoch = 20):
+
+def create_model_reg_2(image_size):
+    model = Sequential()
+
+    # model.add(Conv2D(32, (3, 3), strides = (1, 1), name = 'conv0', input_shape = (1,image_size, image_size)))
+    model.add(Conv2D(64, (3, 3),strides = (1, 1), name = 'conv0',padding='same', input_shape=(64,64,1)))
+
+    # model.add(BatchNormalization(axis = 3, name = 'bn0'))
+    model.add(Activation('relu'))
+
+    model.add(MaxPooling2D((2, 2), name='max_pool'))
+    # model.add(Conv2D(64, (3, 3), strides = (1,1), name="conv1"))
+    model.add(Conv2D(64, (3, 3), name="conv1"))
+    model.add(Activation('relu'))
+    # model.add(AveragePooling2D((3, 3), name='avg_pool'))
+    model.add(MaxPooling2D((3, 3), name='max1_pool'))
+
+    model.add(GlobalAveragePooling2D())
+    model.add(Dense(300, activation="relu", name='rl'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1,activation='relu', name='sm'))
+    print(model.summary())
+    # model.compile(loss='binary_crossentropy',optimizer=Adam(lr=1e-5), metrics=['accuracy'])
+    model.compile(loss='mean_squared_error',optimizer=Adam(lr=1e-5),metrics=['mean_squared_error'])
+    return model
+
+def train_model(image_size,batch_size = 50, nb_epoch = 20 ):
     num_samples = 1999
     cv_size = 499
 
-    train_data, train_target = read_and_normalize_train_data()
+    train_data, train_target = dataprepare.read_and_normalize_train_data()
     train_data = train_data[0:num_samples,:,:,:]
     train_target = train_target[0:num_samples]
 
     X_train, X_valid, y_train, y_valid = train_test_split(train_data, train_target, test_size=cv_size, random_state=56741)
 
-    model = create_model()
-    model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1, validation_data=(X_valid, y_valid) )
+    model = create_model_reg_2()
+    history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1, validation_data=(X_valid, y_valid) )
 
     predictions_valid = model.predict(X_valid, batch_size=50, verbose=1)
-    compare = pd.DataFrame(data={'original':y_valid.reshape((cv_size,)),
-             'prediction':predictions_valid.reshape((cv_size,))})
+    compare = pd.DataFrame(data={'original':y_valid.reshape((cv_size,)),'prediction':predictions_valid.reshape((cv_size,))})
     compare.to_csv('compare.csv')
 
-    return model
-
-def load_train():
-    X_train = []
-    y_train = []
-    heights = pd.read_csv('heights.csv')
-    print('Read train images')
-    for index, row in heights.iterrows():
-        image_path = os.path.join('images', 'train', str(int(row['img'])) + '.png')
-        img = cv2.resize(cv2.imread(image_path, cv2.CV_LOAD_IMAGE_COLOR), (image_size, image_size) ).astype(np.float32)
-        img = img.transpose((2,0,1))
-        X_train.append(img)
-        y_train.append( [ row['height'] ] )
-    return X_train, y_train
-
-def read_and_normalize_train_data():
-    train_data, train_target = load_train()
-    train_data = np.array(train_data, dtype=np.float32)
-    train_target = np.array(train_target, dtype=np.float32)
-    m = train_data.mean()
-    s = train_data.std()
-
-    print ('Train mean, sd:', m, s )
-    train_data -= m
-    train_data /= s
-    print('Train shape:', train_data.shape)
-    print(train_data.shape[0], 'train samples')
-    return train_data, train_target
+    return model, history
