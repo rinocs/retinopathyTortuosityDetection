@@ -413,7 +413,7 @@ def imshow_components(labels):
     labeled_img[label_hue==0] = 0
 
     cv2.imshow('labeled.png', labeled_img)
-    cv2.waitKey()
+    cv2.waitKey(0)
     
     
 def separate_labels(labels, imageName, path, skel, writer):

@@ -21,37 +21,37 @@ validatePath = 'sample/CHASE/validate/label/'
 validateSplittedPath = 'sample/CHASE/validate/label/splitted_vessels/'
 
     
-# with open(trainSplittedPath+'train_splitted.csv', mode='w+') as csv_file:
-#     fieldnames = ['image', 'curve_length', 'chord_length','sd_theta','num_inflection_pts','num_critical_points','curvature','VTI','distance_tort']
-#     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+with open(trainSplittedPath+'train_splitted.csv', mode='w+') as csv_file:
+    fieldnames = ['image', 'curve_length', 'chord_length','sd_theta','num_inflection_pts','num_critical_points','curvature','VTI','distance_tort']
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
-#     writer.writeheader()
+    writer.writeheader()
 
     
         
-#     for filename in os.listdir(trainPath):
+    for filename in os.listdir(trainPath):
        
-#         if filename.endswith(".png") : 
-#             # print(os.path.join(trainPath, filename))
-#             # continue
-#             img = image_util.load_image(os.path.join(trainPath, filename))
-#             resized = image_util.image_resize(img)   
-#             gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY) 
-#             ret, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY )
-#             binary = thresh > filters.threshold_otsu(thresh)
-#             np.unique(binary)
-#             ##### SKELETON 
-#             # skel, distance = medial_axis(binary, return_distance=True)
+        if filename.endswith(".png") : 
+            # print(os.path.join(trainPath, filename))
+            # continue
+            img = image_util.load_image(os.path.join(trainPath, filename))
+            resized = image_util.image_resize(img)   
+            gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY) 
+            ret, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY )
+            binary = thresh > filters.threshold_otsu(thresh)
+            np.unique(binary)
+            ##### SKELETON 
+            # skel, distance = medial_axis(binary, return_distance=True)
 
-#             skeleton = skeletonize(binary)
-#             # Distance to the background for pixels of the skeleton
-#             # dist_on_skel = distance * skel
-#             skeleton = image_util.get_uint_image(skeleton)
-#             branch_locations = vessels_util.getIntersections(skeleton)
-#             labels = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
-#             props = vessels_util.separate_labels(labels,filename, trainSplittedPath,skeleton, writer)
-#             
-#     
+            skeleton = skeletonize(binary)
+            # Distance to the background for pixels of the skeleton
+            # dist_on_skel = distance * skel
+            skeleton = image_util.get_uint_image(skeleton)
+            branch_locations = vessels_util.getIntersections(skeleton)
+            labels = vessels_util.connected_component_label(skeleton.copy(), branch_locations)
+            props = vessels_util.separate_labels(labels,filename, trainSplittedPath,skeleton, writer)
+            
+    
        
 
 with open(testSplittedPath+'test_splitted.csv', mode='w+') as csv_file:

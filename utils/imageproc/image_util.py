@@ -114,6 +114,19 @@ def get_uint_image(image):
     img = image.astype(np.uint8) * 255
     return img
 
+def neighbours_1(x,y,image):
+    "Return 8-neighbours of image point P1(x,y), in a clockwise order"
+    img = image
+    x_1, y_1, x1, y1 = x-1, y-1, x+1, y+1
+    return [ img[x_1][y], img[x_1][y1], img[x][y1], img[x1][y1],     # P2,P3,P4,P5
+                img[x1][y], img[x1][y_1], img[x][y_1], img[x_1][y_1] ]    # P6,P7,P8,P9
+
+def transitions(neighbours):
+    "No. of 0,1 patterns (transitions from 0 to 1) in the ordered sequence"
+    n = neighbours + neighbours[0:1]      # P2, P3, ... , P8, P9, P2
+    return sum( (n1, n2) == (0, 1) for n1, n2 in zip(n, n[1:]) )  # (P2,P3), (P3,P4), ... , (P8,P9), (P9,P2)
+
+
 def thinning_zhang_suen(image):
     "the Zhang-Suen Thinning Algorithm"
     image_thinned = image.copy()  # deepcopy to protect the original image
@@ -124,7 +137,7 @@ def thinning_zhang_suen(image):
         rows, columns,_ = image_thinned.shape               # x for rows, y for columns
         for x in range(1, rows - 1):                     # No. of  rows
             for y in range(1, columns - 1):            # No. of columns
-                p2, p3, p4, p5, p6, p7, p8, p9 = n = neighbours(x, y, image_thinned)
+                p2, p3, p4, p5, p6, p7, p8, p9 = n = neighbours_1(x, y, image_thinned)
                 if ((image_thinned[x][y] == 1).all() and    # Condition 0: Point p1 in the object regions
                     2 <= sum(n) <= 6 and    # Condition 1: 2<= N(p1) <= 6
                     transitions(n) == 1 and    # Condition 2: S(p1)=1
@@ -137,7 +150,7 @@ def thinning_zhang_suen(image):
         changing2 = []
         for x in range(1, rows - 1):
             for y in range(1, columns - 1):
-                p2, p3, p4, p5, p6, p7, p8, p9 = n = neighbours(x, y, image_thinned)
+                p2, p3, p4, p5, p6, p7, p8, p9 = n = neighbours_1(x, y, image_thinned)
                 if ((image_thinned[x][y] == 1).all() and        # Condition 0
                     2 <= sum(n) <= 6 and       # Condition 1
                     transitions(n) == 1 and      # Condition 2

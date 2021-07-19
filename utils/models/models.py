@@ -5,7 +5,6 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras.optimizers import Adam
 
 from sklearn.model_selection import train_test_split
-from keras.utils import to_categorical
 
 from utils.models import dataprepare
 
@@ -271,6 +270,43 @@ def create_model_reg_2(image_size):
     model.compile(loss='mean_squared_error',optimizer=Adam(lr=1e-5),metrics=['mean_squared_error'])
     return model
 
+def create_cnn_custom(width, height, depth, filters=(16, 32, 64), regress=False):
+    inputShape = (height,width,depth)
+    chanDim = -1
+    
+    #define the input 
+    inputs = Input(shape=inputShape)
+    
+    # loop over filters 
+    for (i,f) in enumerate(filters):
+        # first layer
+        if i==0: 
+            x=inputs
+        # CONV => RELU => BN =>POOL
+        x = Conv2D(f, (3,3), padding='same')(x)
+        x = Activation("relu")(x)
+        x = BatchNormalization(axis=chanDim)(x)
+        x = MaxPooling2D(pool_size=(2,2))(x)
+        # x = Dropout(0.25)(x)
+    # flatten the volume, then FC => RELU => BN => DROPOUT
+    x = Flatten()(x)
+    x = Dense(16)(x)
+    x = Activation("relu")(x)
+    x = BatchNormalization(axis=chanDim)(x)
+    x = Dropout(0.5)(x)
+    # apply another FC layer, this one to match the number of nodes
+    # coming out of the MLP
+    x = Dense(4)(x)
+    x = Activation("relu")(x)
+    # check to see if the regression node should be added
+    if regress:
+        x = Dense(1, activation="linear")(x)
+    # construct the CNN
+    model = Model(inputs, x)
+        # return the CNN
+    return model
+    
+    
 def train_model(image_size,batch_size = 50, nb_epoch = 20 ):
     num_samples = 1999
     cv_size = 499

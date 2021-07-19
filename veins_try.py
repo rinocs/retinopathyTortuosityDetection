@@ -26,7 +26,7 @@ def extract_bv(image):
 	# removing very small contours through area parameter noise removal
 	ret,f6 = cv2.threshold(f5,15,255,cv2.THRESH_BINARY)	
 	mask = np.ones(f5.shape[:2], dtype="uint8") * 255	
-	contours, hierarchy = cv2.findContours(f6.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+	_,contours, hierarchy = cv2.findContours(f6.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
 	for cnt in contours:
 		if cv2.contourArea(cnt) <= 200:
 			cv2.drawContours(mask, [cnt], -1, 0, -1)			
@@ -38,7 +38,7 @@ def extract_bv(image):
 	#vessels and also in an interval of area
 	fundus_eroded = cv2.bitwise_not(newfin)	
 	xmask = np.ones(fundus_eroded.shape[:2], dtype="uint8") * 255
-	xcontours, xhierarchy = cv2.findContours(fundus_eroded.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)	
+	_,xcontours, xhierarchy = cv2.findContours(fundus_eroded.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)	
 	for cnt in xcontours:
 		shape = "unidentified"
 		peri = cv2.arcLength(cnt, True)
@@ -54,7 +54,7 @@ def extract_bv(image):
 	blood_vessels = cv2.bitwise_not(finimage)
 	return blood_vessels	
 
-img = cv2.imread('myProject/sample/Vena-93.tif')
+img = cv2.imread('sample\Vena-93.tif')
 #functions.connected_component_label('myProject/sample/vessel1.png')
 if img is None:
     print('Error loading image')
