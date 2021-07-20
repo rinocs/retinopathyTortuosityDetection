@@ -19,8 +19,10 @@ import logging
 from skan import draw
 from skan import skeleton_to_csgraph, summarize, Skeleton
 from utils.vessels import vessels_util
+from fil_finder import FilFinder2D
+import astropy.units as u
 
-
+veinSkeletonPath = "sample/tort/Reduced_Veins_Iso/skeleton/"
 veinPath = "sample/tort/Reduced_Veins_Iso/"
 arteryPath= "sample/tort/Reduced_Arteries_Iso/"
 csvPath = "sample/tort/"
@@ -28,7 +30,7 @@ csvPath = "sample/tort/"
 
 def plot_comparison(original, filtered, filter_name):
     
-    fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(50, 50), sharex=True,
+    fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15, 15), sharex=True,
                                    sharey=True)
     ax1.imshow(original, cmap=plt.cm.gray)
     ax1.set_title('original')
@@ -49,8 +51,8 @@ def remove_small_branches(branch_loc, skeleton):
         skeleton[point[1],point[0]] = 0
         # skeleton[point[1] +1,point[0]] = 0
         # skeleton[point[1] -1,point[0]] = 0
-        # skeleton[point[1] ,point[0]-1] = 0
-        # skeleton[point[1] ,point[0]+1] = 0
+        skeleton[point[1] ,point[0]-1] = 0
+        skeleton[point[1] ,point[0]+1] = 0
         # skeleton[point[1]-1 ,point[0]-1] = 0
         # skeleton[point[1]-1 ,point[0]+1] = 0
         # skeleton[point[1]+1 ,point[0]+1] = 0
@@ -63,54 +65,55 @@ def remove_small_branches(branch_loc, skeleton):
     print(nregions)
     plt.imshow(label_image)
     plt.show()
-    coordinates_to_delete=[]
-    for i in range(1,nregions+1):
-        if howmanypixels(label_image==i)==1:
-            label_image[label_image==i]*0    
-        elif howmanypixels(label_image==i)<100:
-            coordinates_to_delete.append(getcoordinates(label_image==i))
+    # coordinates_to_delete=[]
+    # for i in range(1,nregions+1):
+    #     if howmanypixels(label_image==i)==1:
+    #         label_image[label_image==i]*0    
+    #     elif howmanypixels(label_image==i)<30:
+    #         coordinates_to_delete.append(getcoordinates(label_image==i))
                 
     # We remove the original pixels that correspond to those of a non-interest branch
     # We have to prun again to eliminate the 1 pixel remaining of
-    skeleton2=removing(skeleton,coordinates_to_delete)
+    # skeleton2=removing(skeleton,coordinates_to_delete)
    
                     
     # Deleting non-interest regions
-    # props=regionprops(label_image)
+    props=regionprops(label_image)
     
-    # va = []
-    # for prop in props:
-    #     va.append(prop.area)
-    # index = []    
-    # va.sort()
-    # for idx,val in enumerate(va) :
-    #     if val > 50 :
-    #         index.append(idx)    
+    va = []
+    for prop in props:
+        va.append(prop.area)
+    index = []    
+    va.sort()
+    for idx,val in enumerate(va) :
+        if val > 50 :
+            index.append(idx)    
     # if l > 2:
     #     va_sort = index[l:]
     # else :
     #     va_sort = index
-    # v = np.arange(nregions)
-
-    # # vkill = []
-    # # for i,val in enumerate(va):
-        
-    # vkill = np.setdiff1d(v,va_sort)+1
     
-    # for kkill in vkill:
-    #     skeleton[label_image==kkill]=0
+    v = np.arange(nregions)
+
+    # vkill = []
+    # for i,val in enumerate(va):
+        
+    vkill = np.setdiff1d(v,index)+1
+    
+    for kkill in vkill:
+        skeleton[label_image==kkill]=0
         
     for point in branch_loc:
         skeleton[point[1],point[0]] = 1
         # skeleton[point[1] +1,point[0]] = 1
         # skeleton[point[1] -1,point[0]] = 1
-        # skeleton[point[1] ,point[0]-1] = 1
-        # skeleton[point[1] ,point[0]+1] = 1
+        skeleton[point[1] ,point[0]-1] = 1
+        skeleton[point[1] ,point[0]+1] = 1
         # skeleton[point[1]-1 ,point[0]-1] = 1
         # skeleton[point[1]-1 ,point[0]+1] = 1
         # skeleton[point[1]+1 ,point[0]+1] = 1
         # skeleton[point[1]+1 ,point[0]-1] = 1
-    return skeleton2
+    return skeleton
     
     
     
@@ -199,6 +202,17 @@ def endPoints2(skel):
     return ep
 
 # Main prunning function
+def myPruning (skeleton, size):
+    '''remove iteratively end points "size" 
+    times from the skeleton
+    '''
+    for i in range(0, size):
+        endpoints = vessels_util.getEndPoints(skeleton)
+        endpoints = np.logical_not(endpoints)
+        skeleton = np.logical_and(skeleton,endpoints)
+    return skeleton
+
+    
 def pruning(skeleton, size):
     '''remove iteratively end points "size" 
        times from the skeleton
@@ -290,13 +304,14 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             h,w = img.shape[:2]
             #
             # Drop top and bottom area of image with black parts.
-            img= img[60:h-60, :]
+            # img= img[60:h-71, 20:]
             h, w = img.shape[:2]
-            plt.figure(figsize=(10,10))
-            plt.imshow(img,cmap='Greys_r')
-            plt.show()
-            # Threshold image
-            ret,th1 = cv2.threshold(img,99,255,cv2.THRESH_BINARY_INV)
+            # plt.figure(figsize=(10,10))
+            # plt.imshow(img,cmap='Greys_r')
+            # plt.show()
+            # # Threshold image
+            ret,th1 = cv2.threshold(img,101,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+            th1 = np.logical_not(th1)
             # th1 = cv2.bitwise_not(th1)
             
             # Morphological operation (EROSION) on binary image resulting from bin treshold
@@ -306,9 +321,9 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             dilated = dilation(eroded, selem)
             dilated = dilation(dilated, selem1)
             # dilated = erosion(dilated, selem1)
-            plt.figure(figsize=(10,10))
-            plt.imshow(dilated,cmap='Greys_r')
-            plt.show()
+            # plt.figure(figsize=(10,10))
+            # plt.imshow(dilated,cmap='Greys_r')
+            # plt.show()
             
             # get rid of thinner lines
             # kernel = np.ones((5,5),np.uint8)
@@ -343,44 +358,45 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
                 I2[label_image==kkill]=0
                 
                 
-            plt.figure(figsize=(10,10))
-            plt.subplot(1, 2, 1)
-            plt.imshow(I2,cmap='Greys_r')
-            plt.subplot(1, 2, 2)
-            plt.imshow(dilated,cmap="Greys_r")
-            plt.show()
+            # plt.figure(figsize=(10,10))
+            # plt.subplot(1, 2, 1)
+            # plt.imshow(I2,cmap='Greys_r')
+            # plt.subplot(1, 2, 2)
+            # plt.imshow(dilated,cmap="Greys_r")
+            # plt.show()
             
             
             
             # Making the contour more regular
             # selem1 = disk(3)
-            selem = disk(1)
+            selem = disk(5)
             # eroded = erosion(I2, selem)
             
             dilated = dilation(I2, selem)
             # dilated = dilation(eroded, selem)
             # eroded = erosion(I2, selem)
             # closed=binary_closing(eroded,selem)
-            plot_comparison(I2,dilated,'dilate 2')
+            # plot_comparison(I2,dilated,'dilate 2')
             
-            
-            _, contours0, hierarchy = cv2.findContours( dilated.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contour_image = image_util.get_uint_image(dilated)
+            _, contours0, hierarchy = cv2.findContours( contour_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             contours = [cv2.approxPolyDP(cnt, 4, True) for cnt in contours0[0]]
+            
             
             # Skeletonization
             skeleton=skeletonize(dilated >0)
             # Ploting the skeleton
-            plt.figure(figsize=(15,15))
-            plt.suptitle("skeleton of closed")
-            plt.imshow(skeleton,cmap='Greys_r')
-            plt.show()
+            # plt.figure(figsize=(15,15))
+            # plt.suptitle("skeleton of closed")
+            # plt.imshow(skeleton,cmap='Greys_r')
+            # plt.show()
             
             
             skeleton=cleaningtop(skeleton)
-            fig=plt.figure(figsize=(15,15))
-            fig.suptitle("cleaningtop of skeleton")
-            plt.imshow(skeleton,cmap='Greys_r')
-            plt.show()
+            # fig=plt.figure(figsize=(15,15))
+            # fig.suptitle("cleaningtop of skeleton")
+            # plt.imshow(skeleton,cmap='Greys_r')
+            # plt.show()
             
             # skeleton=cleaningBottom(skeleton)
             # fig=plt.figure(figsize=(15,15))
@@ -388,8 +404,8 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             # plt.imshow(skeleton,cmap='Greys_r')
             # plt.show()
             
-            skeleton1 = pruning(skeleton,40)
-            skeleton1 = pruning2(skeleton1,60)
+            skeleton1 = pruning(skeleton,10)
+            # skeleton1 = pruning(skeleton1,30)
             fig=plt.figure(figsize=(15,15))
             plt.imshow(skeleton1,cmap='Greys_r')
             fig.suptitle("pruning of skeleton")
@@ -397,74 +413,97 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             
             
             skeleton2=skeletonize(skeleton1)
-            plt.figure(figsize=(15,15))
-            plt.imshow(skeleton2,cmap='Greys_r')
-            plt.suptitle("skeleton of skeleton")
-            plt.show()
+            # plt.figure(figsize=(15,15))
+            # plt.imshow(skeleton2,cmap='Greys_r')
+            # plt.suptitle("skeleton of skeleton")
+            # plt.show()
             
             
             
             
-            branched_image  = skeleton2.copy()
             
-            for i in range(3):
-                branch_to_image = branched_image.copy()
-                branch_to_image = image_util.get_uint_image(branch_to_image)
-                branch_locations = vessels_util.getIntersections(branched_image)
-                if not branch_locations :
-                    break
-                branched_image = remove_small_branches(branch_locations, branched_image.copy())
-                for points in branch_locations:
+            
+            
+
+            
+            
+            
+            # branched_image  = skeleton2.copy()
+            
+            # for i in range(3):
+            #     branch_to_image = branched_image.copy()
+            #     branch_to_image = image_util.get_uint_image(branch_to_image)
+            #     branch_locations = vessels_util.getIntersections(branched_image)
+            #     if not branch_locations :
+            #         break
+            #     branched_image = remove_small_branches(branch_locations, branched_image.copy())
+            #     for points in branch_locations:
         
-                    if not points:
-                        print("List is empty")
-                        continue 
+            #         if not points:
+            #             print("List is empty")
+            #             continue 
                 
-                    cv2.circle(branch_to_image,tuple(points) , 2, (255, 255, 0), 5)        
+            #         cv2.circle(branch_to_image,tuple(points) , 2, (255, 255, 0), 5)        
 
 
-                plt.figure(figsize=(10,10))
-                plt.subplot(1, 2, 1)
-                plt.imshow(branched_image,cmap='Greys_r')
-                plt.subplot(1, 2, 2)
-                plt.imshow(branch_to_image,cmap="Greys_r")
-                plt.show()
+            #     plt.figure(figsize=(10,10))
+            #     plt.subplot(1, 2, 1)
+            #     plt.imshow(branched_image,cmap='Greys_r')
+            #     plt.subplot(1, 2, 2)
+            #     plt.imshow(branch_to_image,cmap="Greys_r")
+            #     plt.show()
                
                         
                         
                         
-            label_image, nregions = label(branched_image,return_num=True)
-            # Deleting non-interest regions
-            props=regionprops(label_image)
-            va = []
-            for prop in props:
-                va.append(prop.area)
-            indkeep = np.array(np.argmax(va))
-            v = np.arange(nregions)
-            vkill = np.setdiff1d(v,indkeep)+1 
-            I2 = branched_image.copy()
-            for kkill in vkill:
-                I2[label_image==kkill]=0
+            # label_image, nregions = label(branched_image,return_num=True)
+            # # Deleting non-interest regions
+            # props=regionprops(label_image)
+            # va = []
+            # for prop in props:
+            #     va.append(prop.area)
+            # indkeep = np.array(np.argmax(va))
+            # v = np.arange(nregions)
+            # vkill = np.setdiff1d(v,indkeep)+1 
+            # I2 = branched_image.copy()
+            # for kkill in vkill:
+            #     I2[label_image==kkill]=0
                 
                 
-            fig, ax = plt.subplots(figsize=(10,10))
-            draw.overlay_skeleton_2d(dilated, skeleton2, dilate=1, axes=ax)
-            plt.show()
+
             
-            
-            
-            # # We analise the skeleton to find the 3 branches
-            # pixel_graph, coordinates, degrees = skeleton_to_csgraph(skeleton2)
-                        
-                        
-            #  # To separate the branches
-            # i=degrees==2
-            # fig=plt.figure(figsize=(15,15))
-            # plt.imshow(i)           
+                        # fil finder part, search longest path on skeleton
+            fil = FilFinder2D(skeleton2, distance=250 * u.pc, mask=skeleton2)
+            # fil.preprocess_image(flatten_percent=85)
+            fil.create_mask(border_masking=True, verbose=False,
+            use_existing_mask=True)
+            fil.medskel(verbose=False)
+            fil.analyze_skeletons(branch_thresh=40* u.pix, skel_thresh=10 * u.pix, prune_criteria='length')
+
+            # Show the longest path
+            # plt.imshow(fil.skeleton, cmap='gray')
+            # plt.contour(fil.skeleton_longpath, colors='r')
+            # plt.axis('off')
             # plt.show()
             
+            final_skeleton = fil.skeleton_longpath 
+            splitted = filename.split('.')
+            filename = veinSkeletonPath + splitted[0] + "_skel.png"
+            cv2.imwrite(filename, final_skeleton*255)
             
-            # # Labelling of each branch
+            fig, ax = plt.subplots(figsize=(10,10))
+            draw.overlay_skeleton_2d(img, final_skeleton, dilate=1, axes=ax)
+            plt.show()
+            # # We analise the skeleton to find the 3 branches
+            # pixel_graph, coordinates, degrees = skeleton_to_csgraph(skeleton2)
+            # branch_data = summarize(Skeleton(skeleton2))
+            # draw.overlay_skeleton_networkx(pixel_graph, coordinates, image=skeleton2)
+            # i=degrees==2
+            # fig=plt.figure(figsize=(15,15))
+            # plt.imshow(i)
+            
+            
+            # Labelling of each branch
             # labeled_branch, nbranches = label(i,return_num=True)
             # fig=plt.figure(figsize=(15,15))
             # plt.imshow(labeled_branch,cmap='jet')
@@ -479,8 +518,8 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             #     elif howmanypixels(labeled_branch2==i)<30:
             #         coordinates_to_delete.append(getcoordinates(labeled_branch2==i))
                         
-            # # We remove the original pixels that correspond to those of a non-interest branch
-            # # We have to prun again to eliminate the 1 pixel remaining of
+            # We remove the original pixels that correspond to those of a non-interest branch
+            # We have to prun again to eliminate the 1 pixel remaining of
             # skeleton3=removing(skeleton2,coordinates_to_delete)
             # pre_final_skeleton=pruning2(skeleton3,3)
             # fig=plt.figure(figsize=(15,15))
@@ -489,16 +528,16 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             # plt.show()
                         
                         
-            # # # We remove the small branches again in order to remove the remaining branches 
-            # # labeled_branch3, nbranches3 = label(pre_final_skeleton,return_num=True)
-            # # coordinates_to_delete2=[]
-            # # for i in range(1,nbranches3+1):
-            # #     if howmanypixels(labeled_branch3==i)==1:
-            # #         labeled_branch3[labeled_branch3==i]*0    
-            # #     elif howmanypixels(labeled_branch3==i)<30:
-            # #         coordinates_to_delete2.append(getcoordinates(labeled_branch3==i))
+            # # We remove the small branches again in order to remove the remaining branches 
+            # labeled_branch3, nbranches3 = label(pre_final_skeleton,return_num=True)
+            # coordinates_to_delete2=[]
+            # for i in range(1,nbranches3+1):
+            #     if howmanypixels(labeled_branch3==i)==1:
+            #         labeled_branch3[labeled_branch3==i]*0    
+            #     elif howmanypixels(labeled_branch3==i)<30:
+            #         coordinates_to_delete2.append(getcoordinates(labeled_branch3==i))
             
-            # # skeleton4=removing(pre_final_skeleton,coordinates_to_delete2)
+            # skeleton4=removing(pre_final_skeleton,coordinates_to_delete2)
             # final_skeleton=pruning2(skeleton3,5)
             # fig=plt.figure(figsize=(15,15))
             # plt.imshow(final_skeleton,cmap='GnBu')
@@ -518,10 +557,10 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             perimeter=[]
             for cnt in contours[1:]:
                 perimeter.append(cv2.arcLength(cnt,True))
-            print (perimeter)
-            print(max(perimeter))
+            # print (perimeter)
+            # print(max(perimeter))
             maxindex= perimeter.index(max(perimeter))
-            print (maxindex)
+            # print (maxindex)
 
             cv2.drawContours( vis2, contours, maxindex +1, (255,0,0), -1)
 
@@ -538,12 +577,12 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
 
             # Show all images
             titles = ['Original Image','Threshold','Contours', 'Result', 'final Skeleton', "Skel"]
-            images=[img, th1, vis, vis2,skeleton2, branched_image]
-            for i in range(6):
-                plt.subplot(2,3,i+1)
-                plt.imshow(images[i],'gray')
-                plt.title(titles[i]), plt.xticks([]), plt.yticks([])
-            plt.show()
+            images=[img, th1, vis, vis2,skeleton2, final_skeleton ]
+            # for i in range(6):
+            #     plt.subplot(2,3,i+1)
+            #     plt.imshow(images[i],'gray')
+            #     plt.title(titles[i]), plt.xticks([]), plt.yticks([])
+            # plt.show()
                         
                         
                         
