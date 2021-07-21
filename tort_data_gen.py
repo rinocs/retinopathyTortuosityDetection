@@ -276,6 +276,61 @@ def removing(image,coordinates):
                 image[int(coords[0]),int(coords[1])]=0
     return image
 
+
+
+####################################################
+
+max_block = 500
+max_c = 100
+max_value = 255
+max_type = 1
+max_binary_value = 255
+trackbar_type = 'Type: \n 0: gaussian \n 1:Mean \n '
+trackbar_value = 'Value'
+trackbar_block_size = "block size"
+trackbar_c_value = "c value"
+window_name = 'Threshold Demo'
+
+
+#######################################################
+def Threshold_Demo(val):
+    #0: Binary
+    #1: Binary Inverted
+    #2: Threshold Truncateds
+    #3: Threshold to Zero
+    #4: Threshold to Zero Inverted
+    threshold_type = cv2.getTrackbarPos(trackbar_type, window_name)
+    threshold_value = cv2.getTrackbarPos(trackbar_value, window_name)
+    _, dst = cv2.threshold(blurred, threshold_value, max_binary_value, threshold_type )
+    cv2.imshow(window_name, dst)
+    
+def Adaptive_Threshold_Demo(val):
+    #0: Binary
+    #1: Binary Inverted
+    #2: Threshold Truncated
+    #3: Threshold to Zero
+    #4: Threshold to Zero Inverted
+    global thresh
+    block_size = cv2.getTrackbarPos(trackbar_block_size, window_name)
+    c_value = cv2.getTrackbarPos(trackbar_c_value, window_name)
+    threshold_type = cv2.getTrackbarPos(trackbar_type, window_name)
+    method = 0
+    if threshold_type == 0:
+        method = cv2.ADAPTIVE_THRESH_GAUSSIAN_C
+    else: 
+        method = cv2.ADAPTIVE_THRESH_MEAN_C    
+    block_size = max(3,block_size)
+    # adaptive_method = 
+    thresh = cv2.adaptiveThreshold(gray, 255,method, cv2.THRESH_BINARY_INV, block_size, c_value)
+    cv2.imshow(window_name, thresh)
+    
+
+#######################################################
+
+
+
+
+
 with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
     fieldnames = ['image', 'curve_length', 'chord_length','sd_theta','num_inflection_pts','num_critical_points','curvature','VTI','distance_tort']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -291,58 +346,89 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             # continue
             
             img = image_util.load_image(os.path.join(veinPath, filename))
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY);
-            
-            # img = extract_bv(img)
-            # cv2.imshow("extracted_bv",img)
-            # cv2.waitKey(0)
             img = image_util.image_resize(img)   
-            # plt.figure(figsize=(10,10))
-            # plt.imshow(img,cmap='Greys_r')
-            # plt.show()
-            print(img.shape)
-            h,w = img.shape[:2]
+            
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY);
+            # blurred = cv2.GaussianBlur(gray, (7, 7), cv2.BORDER_DEFAULT)
+            plt.figure(figsize=(10,10))
+            plt.suptitle("gray")
+            plt.imshow(gray,cmap='Greys_r')
+            plt.show()
+            
+            
+          
+            print(gray.shape)
+            h,w = gray.shape[:2]
             #
             # Drop top and bottom area of image with black parts.
-            # img= img[60:h-71, 20:]
-            h, w = img.shape[:2]
+            gray= gray[50:h-50, 20:]
+            h, w = gray.shape[:2]
             # plt.figure(figsize=(10,10))
-            # plt.imshow(img,cmap='Greys_r')
+            # plt.suptitle("gray")
+            # plt.imshow(gray,cmap='Greys_r')
             # plt.show()
-            # # Threshold image
-            ret,th1 = cv2.threshold(img,101,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-            th1 = np.logical_not(th1)
-            # th1 = cv2.bitwise_not(th1)
+            
+            max_value = np.max(gray)
+            backgroundRemoved = gray.astype(float)
+            blur = cv2.GaussianBlur(backgroundRemoved, (151,151), 50)
+            backgroundRemoved = backgroundRemoved/blur
+            backgroundRemoved = (backgroundRemoved*max_value/np.max(backgroundRemoved)).astype(np.uint8)
+
+
+            # fig = plt.figure(figsize=(20, 20))
+            # plt.subplot(311),plt.imshow(gray, 'gray'),plt.title('Input'),plt.axis('off')
+            # plt.subplot(312),plt.imshow(backgroundRemoved, 'gray'),plt.title('Background Removed'),plt.axis('off')
+
+            
+            
+            
+            cv2.namedWindow(window_name)
+            cv2.createTrackbar(trackbar_type, window_name , 0, max_type, Adaptive_Threshold_Demo)
+            cv2.createTrackbar(trackbar_block_size, window_name , 3, max_block, Adaptive_Threshold_Demo)
+            # Create Trackbar to choose Threshold value
+            cv2.createTrackbar(trackbar_c_value, window_name , 2, max_c, Adaptive_Threshold_Demo)
+            # Call the function to initialize
+            Adaptive_Threshold_Demo(0)
+            # Wait until user finishes program
+            cv2.waitKey(0)
+            
+            # # # # Threshold image
+            # ret,th1 = cv2.threshold(gray,101,255,cv2.THRESH_BINARY_INV)
+            # # th1 = np.logical_not(th1)
+            # # th1 = cv2.bitwise_not(th1)
+            
+            # plt.figure(figsize=(10,10))
+            # plt.suptitle("binary inv")
+            # plt.imshow(th1,cmap='Greys_r')
+            # plt.show()
+            
+            # ret2, th2 = cv2.threshold(gray, 99, 255,cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+            # plt.figure(figsize=(10,10))
+            # plt.suptitle("binary inv + otsu")
+            # plt.imshow(th2,cmap='Greys_r')
+            # plt.show()
+            
+            
+            # # thresh = cv2.adaptiveThreshold(gray, 255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 51, 8)
+            plt.figure(figsize=(10,10))
+            plt.suptitle("adaptive")
+            plt.imshow(thresh,cmap='Greys_r')
+            plt.show()
+            
+            
             
             # Morphological operation (EROSION) on binary image resulting from bin treshold
-            selem1 = disk(5)
+            selem1 = disk(3)
             selem = disk(3)
-            eroded = erosion(th1, selem)
+            eroded = erosion(thresh, selem)
             dilated = dilation(eroded, selem)
             dilated = dilation(dilated, selem1)
             # dilated = erosion(dilated, selem1)
-            # plt.figure(figsize=(10,10))
-            # plt.imshow(dilated,cmap='Greys_r')
-            # plt.show()
-            
-            # get rid of thinner lines
-            # kernel = np.ones((5,5),np.uint8)
-            # kernel1 = np.ones((3,3), np.uint8) 
-            # th1 = cv2.dilate(th1,kernel,iterations = 2)
-            # th1 = cv2.dilate(th1, kernel1, iterations=3)   
-            # Determine contour of all blobs found
-            
-                       
-                       
-               
+            plt.figure(figsize=(10,10))
+            plt.imshow(dilated,cmap='Greys_r')
+            plt.show()
             
             
-            # bv = cv2.bitwise_not(th1)
-            # bw_img = image_util.get_uint_image(th1)
-            # bw_img = cv2.erode(bw_img, kernel1, iterations=2)   
-            # bw_img = image_util.get_uint_image(bv)
-            # cv2.imshow("Frame", bw_img*255)
-            # cv2.waitKey(0)
             # Labeling process
             label_image, nregions = label(dilated,return_num=True)
             # Deleting non-interest regions
@@ -358,25 +444,25 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
                 I2[label_image==kkill]=0
                 
                 
-            # plt.figure(figsize=(10,10))
-            # plt.subplot(1, 2, 1)
-            # plt.imshow(I2,cmap='Greys_r')
-            # plt.subplot(1, 2, 2)
-            # plt.imshow(dilated,cmap="Greys_r")
-            # plt.show()
+            plt.figure(figsize=(10,10))
+            plt.subplot(1, 2, 1)
+            plt.imshow(I2,cmap='Greys_r')
+            plt.subplot(1, 2, 2)
+            plt.imshow(dilated,cmap="Greys_r")
+            plt.show()
             
             
             
             # Making the contour more regular
             # selem1 = disk(3)
-            selem = disk(5)
+            selem = disk(3)
             # eroded = erosion(I2, selem)
             
             dilated = dilation(I2, selem)
             # dilated = dilation(eroded, selem)
             # eroded = erosion(I2, selem)
             # closed=binary_closing(eroded,selem)
-            # plot_comparison(I2,dilated,'dilate 2')
+            plot_comparison(I2,dilated,'dilate 2')
             
             contour_image = image_util.get_uint_image(dilated)
             _, contours0, hierarchy = cv2.findContours( contour_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -392,11 +478,11 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             # plt.show()
             
             
-            skeleton=cleaningtop(skeleton)
-            # fig=plt.figure(figsize=(15,15))
-            # fig.suptitle("cleaningtop of skeleton")
-            # plt.imshow(skeleton,cmap='Greys_r')
-            # plt.show()
+            # skeleton=cleaningtop(skeleton)
+            fig=plt.figure(figsize=(15,15))
+            fig.suptitle("cleaningtop of skeleton")
+            plt.imshow(skeleton,cmap='Greys_r')
+            plt.show()
             
             # skeleton=cleaningBottom(skeleton)
             # fig=plt.figure(figsize=(15,15))
@@ -404,15 +490,15 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             # plt.imshow(skeleton,cmap='Greys_r')
             # plt.show()
             
-            skeleton1 = pruning(skeleton,10)
+            # skeleton1 = pruning(skeleton,10)
             # skeleton1 = pruning(skeleton1,30)
-            fig=plt.figure(figsize=(15,15))
-            plt.imshow(skeleton1,cmap='Greys_r')
-            fig.suptitle("pruning of skeleton")
-            plt.show()
+            # fig=plt.figure(figsize=(15,15))
+            # plt.imshow(skeleton1,cmap='Greys_r')
+            # fig.suptitle("pruning of skeleton")
+            # plt.show()
             
             
-            skeleton2=skeletonize(skeleton1)
+            # skeleton2=skeletonize(skeleton1)
             # plt.figure(figsize=(15,15))
             # plt.imshow(skeleton2,cmap='Greys_r')
             # plt.suptitle("skeleton of skeleton")
@@ -473,7 +559,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
 
             
                         # fil finder part, search longest path on skeleton
-            fil = FilFinder2D(skeleton2, distance=250 * u.pc, mask=skeleton2)
+            fil = FilFinder2D(skeleton, distance=250 * u.pc, mask=skeleton)
             # fil.preprocess_image(flatten_percent=85)
             fil.create_mask(border_masking=True, verbose=False,
             use_existing_mask=True)
@@ -492,7 +578,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             cv2.imwrite(filename, final_skeleton*255)
             
             fig, ax = plt.subplots(figsize=(10,10))
-            draw.overlay_skeleton_2d(img, final_skeleton, dilate=1, axes=ax)
+            draw.overlay_skeleton_2d(gray, final_skeleton, dilate=1, axes=ax)
             plt.show()
             # # We analise the skeleton to find the 3 branches
             # pixel_graph, coordinates, degrees = skeleton_to_csgraph(skeleton2)
@@ -577,7 +663,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
 
             # Show all images
             titles = ['Original Image','Threshold','Contours', 'Result', 'final Skeleton', "Skel"]
-            images=[img, th1, vis, vis2,skeleton2, final_skeleton ]
+            images=[img, thresh, vis, vis2,skeleton, final_skeleton ]
             # for i in range(6):
             #     plt.subplot(2,3,i+1)
             #     plt.imshow(images[i],'gray')
