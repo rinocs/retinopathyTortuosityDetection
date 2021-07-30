@@ -5,6 +5,8 @@ from skimage.morphology import skeletonize, disk,binary_dilation,binary_closing,
 from skimage.measure import label, regionprops
 from skimage.morphology import erosion, dilation
 from skimage.morphology import disk
+from sklearn import cluster
+from skimage import data
 import sys
 import matplotlib.pyplot as plt
 import scipy.ndimage as nd
@@ -22,9 +24,11 @@ from utils.vessels import vessels_util
 from fil_finder import FilFinder2D
 import astropy.units as u
 
+
 veinSkeletonPath = "sample/tort/Reduced_Veins_Iso/skeleton/"
 veinPath = "sample/tort/Reduced_Veins_Iso/"
-arteryPath= "sample/tort/Reduced_Arteries_Iso/"
+arteryPath= "sample/tort/Reduced_Arteries_Iso/manual/"
+arterySkeletonPath = "sample/tort/Reduced_Arteries_Iso/skeleton/"
 csvPath = "sample/tort/"
 
 
@@ -276,12 +280,25 @@ def removing(image,coordinates):
                 image[int(coords[0]),int(coords[1])]=0
     return image
 
-
+def km_clust(array, n_clusters):
+        
+    # Create a line array, the lazy way
+    X = array.reshape((-1, 1))
+    # Define the k-means clustering problem
+    k_m = cluster.KMeans(n_clusters=n_clusters, n_init=4)
+    # Solve the k-means clustering problem
+    k_m.fit(X)
+    v_kmeans = k_m.predict(X)
+    # Get the coordinates of the clusters centres as a 1D array
+    values = k_m.cluster_centers_.squeeze()
+    # Get the label of each point
+    labels = k_m.labels_
+    return(values, labels, v_kmeans)
 
 ####################################################
 
-max_block = 500
-max_c = 100
+max_block = 1000
+max_c = 200
 max_value = 255
 max_type = 1
 max_binary_value = 255
@@ -321,8 +338,9 @@ def Adaptive_Threshold_Demo(val):
         method = cv2.ADAPTIVE_THRESH_MEAN_C    
     block_size = max(3,block_size)
     # adaptive_method = 
-    thresh = cv2.adaptiveThreshold(gray, 255,method, cv2.THRESH_BINARY_INV, block_size, c_value)
+    thresh = cv2.adaptiveThreshold(gray, 255,method, cv2.THRESH_BINARY , block_size, c_value)
     cv2.imshow(window_name, thresh)
+    cv2.imshow("original", gray)
     
 
 #######################################################
@@ -331,7 +349,7 @@ def Adaptive_Threshold_Demo(val):
 
 
 
-with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
+with open(csvPath+'arteryArtTort.csv', mode='w+') as csv_file:
     fieldnames = ['image', 'curve_length', 'chord_length','sd_theta','num_inflection_pts','num_critical_points','curvature','VTI','distance_tort']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
@@ -339,16 +357,34 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
 
     
         
-    for filename in os.listdir(veinPath):
+    for filename in os.listdir(arteryPath):
        
         if filename.endswith(".tif") : 
             # print(os.path.join(trainPath, filename))
             # continue
             
-            img = image_util.load_image(os.path.join(veinPath, filename))
+            img = image_util.load_image(os.path.join(arteryPath, filename))
+            img = cv2.fastNlMeansDenoisingColored(img,None,10,10,7,21)
+            # img_yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+ 
+            # # equalize the histogram of the Y channel
+            # img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
+            
+            # # convert the YUV image back to RGB format
+            # img_output = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+            
+            # cv2.imshow('Color input image', img)
+            # cv2.imshow('Histogram equalized', img_output)
+            
+            # cv2.waitKey(0)
+            
             img = image_util.image_resize(img)   
             
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY);
+            # enhance image
+                 
+            # gray = cv2.fastNlMeansDenoising(gray,None,10,7,21)
+            gray = cv2.equalizeHist(gray)    
             # blurred = cv2.GaussianBlur(gray, (7, 7), cv2.BORDER_DEFAULT)
             plt.figure(figsize=(10,10))
             plt.suptitle("gray")
@@ -356,23 +392,84 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             plt.show()
             
             
+            plt.subplot(131),plt.imshow(gray,'gray')
+            plt.subplot(132),plt.imshow(img,'gray')
+            plt.show()
+            
           
             print(gray.shape)
+            print(filename)
             h,w = gray.shape[:2]
             #
             # Drop top and bottom area of image with black parts.
-            gray= gray[50:h-50, 20:]
+            gray= gray[10:h-40, 20:]
             h, w = gray.shape[:2]
-            # plt.figure(figsize=(10,10))
-            # plt.suptitle("gray")
-            # plt.imshow(gray,cmap='Greys_r')
-            # plt.show()
+            plt.figure(figsize=(10,10))
+            plt.suptitle("gray")
+            plt.imshow(gray,cmap='Greys_r')
+            plt.show()
             
-            max_value = np.max(gray)
-            backgroundRemoved = gray.astype(float)
-            blur = cv2.GaussianBlur(backgroundRemoved, (151,151), 50)
-            backgroundRemoved = backgroundRemoved/blur
-            backgroundRemoved = (backgroundRemoved*max_value/np.max(backgroundRemoved)).astype(np.uint8)
+            
+            # Group similar grey levels using x clusters
+            values, labels, v_kmeans = km_clust(gray, n_clusters = 4)
+            # Create the segmented array from labels and values
+            img_segm = np.choose(labels, values)
+            # Reshape the array as the original image
+            img_segm.shape = gray.shape
+            v_kmeans.shape = gray.shape
+            # Get the values of min and max intensity in the original image
+           
+            vmin = gray.min()
+            vmax = gray.max()
+            fig = plt.figure(1)
+            # Plot the original image
+            ax1 = fig.add_subplot(1,2,1)
+            ax1.imshow(gray,cmap=plt.cm.gray, vmin=vmin, vmax=vmax)
+            ax1.set_title('Original image')
+            # Plot the simplified color image
+            ax2 = fig.add_subplot(1,2,2)
+            ax2.imshow(img_segm, cmap=plt.cm.gray, vmin=vmin, vmax=vmax)
+            ax2.set_title('Simplified levels')
+
+            plt.show()
+            plt.imshow(v_kmeans, cmap="Greys_r")
+            plt.show()    
+
+            
+            # img_segm = np.logical_not(img_segm)
+            img_segm=image_util.get_uint_image(img_segm) 
+            
+            
+            index=np.argmax(values)
+            vessel=v_kmeans==index
+            plt.figure(figsize=(10,10))
+            plt.imshow(vessel,cmap='Greys_r')
+            plt.show()
+            
+            vessel = image_util.get_uint_image(vessel)
+            
+            
+            # val = [150,100]
+            # label = labels == index
+            # img_vessel= np.choose(label, val)
+            # img_vessel.shape= gray.shape
+            # plt.imshow( img_vessel,cmap='Greys_r')
+            # plt.show()
+            # # img_vessel = np.logical_not(img_vessel)
+            # img_vessel=image_util.get_uint_image(img_vessel) 
+            # plt.imshow( img_vessel,cmap='Greys_r')
+            # plt.show()
+            # # Reshape as 1D array
+            # img_flat = gray.reshape((-1, 1))
+            # fig = plt.figure(1)
+            # ax1 = fig.add_subplot(1,2,1)
+            # ax1.imshow(gray,cmap=plt.cm.gray)
+            # ax2 = fig.add_subplot(1,2,2)
+            # # Plot the histogram with 256 bins
+            # ax2.hist(img_flat,256)
+
+            # plt.show()        
+                    
 
 
             # fig = plt.figure(figsize=(20, 20))
@@ -383,6 +480,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             
             
             cv2.namedWindow(window_name)
+            cv2.namedWindow("original")
             cv2.createTrackbar(trackbar_type, window_name , 0, max_type, Adaptive_Threshold_Demo)
             cv2.createTrackbar(trackbar_block_size, window_name , 3, max_block, Adaptive_Threshold_Demo)
             # Create Trackbar to choose Threshold value
@@ -455,7 +553,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             
             # Making the contour more regular
             # selem1 = disk(3)
-            selem = disk(3)
+            selem = disk(1)
             # eroded = erosion(I2, selem)
             
             dilated = dilation(I2, selem)
@@ -490,7 +588,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             # plt.imshow(skeleton,cmap='Greys_r')
             # plt.show()
             
-            # skeleton1 = pruning(skeleton,10)
+            skeleton1 = pruning(skeleton,30)
             # skeleton1 = pruning(skeleton1,30)
             # fig=plt.figure(figsize=(15,15))
             # plt.imshow(skeleton1,cmap='Greys_r')
@@ -559,12 +657,12 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
 
             
                         # fil finder part, search longest path on skeleton
-            fil = FilFinder2D(skeleton, distance=250 * u.pc, mask=skeleton)
+            fil = FilFinder2D(skeleton1, distance=250 * u.pc, mask=skeleton1)
             # fil.preprocess_image(flatten_percent=85)
             fil.create_mask(border_masking=True, verbose=False,
             use_existing_mask=True)
             fil.medskel(verbose=False)
-            fil.analyze_skeletons(branch_thresh=40* u.pix, skel_thresh=10 * u.pix, prune_criteria='length')
+            fil.analyze_skeletons(branch_thresh=50* u.pix, skel_thresh=10 * u.pix, prune_criteria='length')
 
             # Show the longest path
             # plt.imshow(fil.skeleton, cmap='gray')
@@ -574,7 +672,7 @@ with open(csvPath+'veinArtTort.csv', mode='w+') as csv_file:
             
             final_skeleton = fil.skeleton_longpath 
             splitted = filename.split('.')
-            filename = veinSkeletonPath + splitted[0] + "_skel.png"
+            filename = arterySkeletonPath + splitted[0] + "_skel.png"
             cv2.imwrite(filename, final_skeleton*255)
             
             fig, ax = plt.subplots(figsize=(10,10))
