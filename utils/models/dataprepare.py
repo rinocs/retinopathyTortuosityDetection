@@ -55,6 +55,34 @@ def load_val(val_path, h,w):
         # y_val.append( [ row['VTI'] ] )
         y_val.append( [ row['distance_tort'] ] )
     return X_val, y_val
+def load_tort(tort_path, h,w):
+    X_val = []
+    y_val = []
+    tort = pd.read_csv(tort_path+'all_tort.csv')
+    print('Read tort images')
+    for index, row in tort.iterrows():
+        image_path = os.path.join(tort_path, str(row['image']))
+        img = cv2.resize(cv2.imread(image_path, 0), (w, h) ).astype(np.float32)
+        # img = img.transpose((2,0,1))
+        # img = img/255
+        X_val.append(img)
+        # y_val.append( [ row['VTI'] ] )
+        y_val.append( [ row['rank'] ] )
+    return X_val, y_val
+def load_tort_dt(val_path, h,w):
+    X_val = []
+    y_val = []
+    tort = pd.read_csv(val_path+'all_tort.csv')
+    print('Read tort images')
+    for index, row in tort.iterrows():
+        image_path = os.path.join(val_path, str(row['image']))
+        img = cv2.resize(cv2.imread(image_path, 0), (w, h) ).astype(np.float32)
+        # img = img.transpose((2,0,1))
+        # img = img/255
+        X_val.append(img)
+        # y_val.append( [ row['VTI'] ] )
+        y_val.append( [ row['distance_tort'] ] )
+    return X_val, y_val
 
 def read_and_normalize_train_data(path, h,w):
     train_data, train_target = load_train(path, h,w)
@@ -181,3 +209,21 @@ def read_val_data_v2(path,  h,w):
     print('Validate shape:', val_data.shape)
     print(val_data.shape[0], 'validatation samples')
     return val_data, val_target
+
+def read_tort_data(path,  h,w):
+    tort_data, tort_target = load_tort(path,  h,w)
+    tort_data = np.array(tort_data, dtype=np.float32)
+    tort_target = np.array(tort_target, dtype=np.float32)
+    # val_data = val_data/255
+    print('tort shape:', tort_data.shape)
+    print(tort_data.shape[0], 'tort samples')
+    return tort_data, tort_target
+
+def read_tort_data_dt(path,  h,w):
+    tort_data, tort_target = load_tort_dt(path,  h,w)
+    tort_data = np.array(tort_data, dtype=np.float32)
+    tort_target = np.array(tort_target, dtype=np.float32)
+    # val_data = val_data/255
+    print('tort shape:', tort_data.shape)
+    print(tort_data.shape[0], 'tort samples')
+    return tort_data, tort_target
