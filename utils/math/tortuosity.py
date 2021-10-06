@@ -61,6 +61,7 @@ def distance_measure_tortuosity(coord):
     if len(coord) < 2:
         raise ValueError("Given curve must have at least 2 elements")
 
+    #return (_curve_length(coord) / _chord_length(coord) -1)
     return _curve_length(coord) / _chord_length(coord)
 
 def _detect_inflection_points(x, y):

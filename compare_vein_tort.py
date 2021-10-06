@@ -9,7 +9,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import normalize, MinMaxScaler
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 from pandas.io.json import json_normalize
@@ -100,6 +100,12 @@ mse_linear_reg_vein_tort = mean_squared_error(rank_norm, linear_reg_vein_tort_no
 mse_density_vein_tort = mean_squared_error(rank_norm, density_vein_tort_norm)
 
 
+##R2SCORE   
+r2_dist_infl_vein_tort = r2_score(rank_norm, dist_infl_vein_tort_norm)
+r2_squared_vein_tort = r2_score(rank_norm, squared_vein_tort_norm)
+r2_distance_vein_tort = r2_score(rank_norm, distance_vein_tort_norm)
+r2_linear_reg_vein_tort = r2_score(rank_norm, linear_reg_vein_tort_norm)
+r2_density_vein_tort = r2_score(rank_norm, density_vein_tort_norm)
 
 # norm2 = vein_tort/30
 # norm2 = vein_tort/ np.linalg.norm(vein_tort)
@@ -119,7 +125,7 @@ ax = axes.ravel()
 
 ax[0].scatter(name_vein, rank_norm)
 ax[0].scatter(name_vein, density_vein_tort_norm)
-ax[0].set_title('MSE:'+str(mse_density_vein_tort))
+ax[0].set_title('MSE:'+str(mse_density_vein_tort)+ "R2" + str(r2_density_vein_tort))
 ax[0].set_xlabel("image name")
 ax[0].set_ylabel("tortuosity_density")
 ax[0].set_xticklabels(name_vein ,rotation = 45)
@@ -127,7 +133,7 @@ ax[0].set_xticklabels(name_vein ,rotation = 45)
 
 ax[1].scatter(name_vein, rank_norm)
 ax[1].scatter(name_vein, dist_infl_vein_tort_norm)
-ax[1].set_title('MSE:' +str(mse_dist_infl_vein_tort))
+ax[1].set_title('MSE:' +str(mse_dist_infl_vein_tort)+ "R2" + str(r2_dist_infl_vein_tort))
 ax[1].set_xlabel("image name")
 ax[1].set_ylabel("distance_inflection_tort")
 ax[1].set_xticklabels(name_vein ,rotation = 45)
@@ -136,7 +142,7 @@ ax[1].set_xticklabels(name_vein ,rotation = 45)
 
 ax[2].scatter(name_vein, rank_norm)
 ax[2].scatter(name_vein, squared_vein_tort_norm)
-ax[2].set_title(' MSE:'+str(mse_squared_vein_tort))
+ax[2].set_title(' MSE:'+str(mse_squared_vein_tort)+ "R2" + str(r2_squared_vein_tort))
 ax[2].set_xlabel("image name")
 ax[2].set_ylabel("squared_tort")
 ax[2].set_xticklabels(name_vein ,rotation = 45)
@@ -144,7 +150,7 @@ ax[2].set_xticklabels(name_vein ,rotation = 45)
 
 ax[3].scatter(name_vein, rank_norm)
 ax[3].scatter(name_vein, distance_vein_tort_norm)
-ax[3].set_title(' MSE:' +str(mse_distance_vein_tort))
+ax[3].set_title(' MSE:' +str(mse_distance_vein_tort)+ "R2" + str(r2_distance_vein_tort))
 ax[3].set_xlabel("image name")
 ax[3].set_ylabel("distance_tortuosity")
 ax[3].set_xticklabels(name_vein ,rotation = 45)
@@ -152,7 +158,7 @@ ax[3].set_xticklabels(name_vein ,rotation = 45)
 
 ax[4].scatter(name_vein, rank_norm)
 ax[4].scatter(name_vein, linear_reg_vein_tort_norm)
-ax[4].set_title(' MSE:' + str(mse_linear_reg_vein_tort) )
+ax[4].set_title(' MSE:' + str(mse_linear_reg_vein_tort) + "R2" + str(r2_linear_reg_vein_tort))
 ax[4].set_xlabel("image name")
 ax[4].set_ylabel("linear_reg_tort")
 ax[4].set_xticklabels(name_vein ,rotation = 45)

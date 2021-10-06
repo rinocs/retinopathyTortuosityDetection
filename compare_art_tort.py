@@ -9,7 +9,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import normalize, MinMaxScaler
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 
@@ -103,6 +103,17 @@ mse_linear_reg_art_tort = mean_squared_error(rank_norm, linear_reg_art_tort_norm
 mse_density_art_tort = mean_squared_error(rank_norm, density_art_tort_norm)
 mse_vti = mean_squared_error(rank_norm, vti_norm)
 mse_vti_mat = mean_squared_error(rank_norm, vti_mat_norm)
+
+
+###R2score
+##R2SCORE   
+r2_dist_infl_vein_tort = r2_score(rank_norm, dist_infl_art_tort_norm)
+r2_squared_vein_tort = r2_score(rank_norm, squared_art_tort_norm)
+r2_distance_vein_tort = r2_score(rank_norm, distance_art_tort_norm)
+r2_linear_reg_vein_tort = r2_score(rank_norm, linear_reg_art_tort_norm)
+r2_density_vein_tort = r2_score(rank_norm, density_art_tort_norm)
+r2_vti = r2_score(rank_norm, vti_norm)
+r2_vti_mat = r2_score(rank_norm, vti_mat_norm)
 
 
 
