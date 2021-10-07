@@ -24,7 +24,7 @@ def myNormalize(lst):
 # loading file
 
     
-with open("DATA/artery_tort_test_1.json", "r") as read_file:
+with open("Data/artery_tort_test_1.json", "r") as read_file:
     data_art = json.load(read_file)    
     
 entries = sorted(data_art.items(), key=lambda items: items[1]['rank'])
@@ -107,11 +107,11 @@ mse_vti_mat = mean_squared_error(rank_norm, vti_mat_norm)
 
 ###R2score
 ##R2SCORE   
-r2_dist_infl_vein_tort = r2_score(rank_norm, dist_infl_art_tort_norm)
-r2_squared_vein_tort = r2_score(rank_norm, squared_art_tort_norm)
-r2_distance_vein_tort = r2_score(rank_norm, distance_art_tort_norm)
-r2_linear_reg_vein_tort = r2_score(rank_norm, linear_reg_art_tort_norm)
-r2_density_vein_tort = r2_score(rank_norm, density_art_tort_norm)
+r2_dist_infl_art_tort = r2_score(rank_norm, dist_infl_art_tort_norm)
+r2_squared_art_tort = r2_score(rank_norm, squared_art_tort_norm)
+r2_distance_art_tort = r2_score(rank_norm, distance_art_tort_norm)
+r2_linear_reg_art_tort = r2_score(rank_norm, linear_reg_art_tort_norm)
+r2_density_art_tort = r2_score(rank_norm, density_art_tort_norm)
 r2_vti = r2_score(rank_norm, vti_norm)
 r2_vti_mat = r2_score(rank_norm, vti_mat_norm)
 
@@ -134,7 +134,7 @@ ax = axes.ravel()
 
 ax[0].scatter(name_art, rank_norm)
 ax[0].scatter(name_art, density_art_tort_norm)
-ax[0].set_title(' MSE:'+str(mse_density_art_tort))
+ax[0].set_title(' MSE:'+"{0:.5f}".format(mse_density_art_tort) + "r2score:" +"{0:.5f}".format(r2_density_art_tort))
 ax[0].set_xlabel("image name")
 ax[0].set_ylabel("tortuosity_density")
 ax[0].set_xticklabels(name_art ,rotation = 45)
@@ -142,7 +142,7 @@ ax[0].set_xticklabels(name_art ,rotation = 45)
 
 ax[1].scatter(name_art, rank_norm)
 ax[1].scatter(name_art, dist_infl_art_tort_norm)
-ax[1].set_title(' MSE:' +str(mse_dist_infl_art_tort))
+ax[1].set_title(' MSE:' +"{0:.5f}".format(mse_dist_infl_art_tort) + "r2score:" +"{0:.5f}".format(r2_dist_infl_art_tort))
 ax[1].set_xlabel("image name")
 ax[1].set_ylabel("distance_inflection_tort")
 ax[1].set_xticklabels(name_art ,rotation = 45)
@@ -151,7 +151,7 @@ ax[1].set_xticklabels(name_art ,rotation = 45)
 
 ax[2].scatter(name_art, rank_norm)
 ax[2].scatter(name_art, squared_art_tort_norm)
-ax[2].set_title(' MSE:'+str(mse_squared_art_tort))
+ax[1].set_title(' MSE:' +"{0:.5f}".format(mse_squared_art_tort) + "r2score:" +"{0:.5f}".format(r2_squared_art_tort))
 ax[2].set_xlabel("image name")
 ax[2].set_ylabel("squared_tort")
 ax[2].set_xticklabels(name_art ,rotation = 45)
@@ -159,7 +159,7 @@ ax[2].set_xticklabels(name_art ,rotation = 45)
 
 ax[3].scatter(name_art, rank_norm)
 ax[3].scatter(name_art, distance_art_tort_norm)
-ax[3].set_title(' MSE:' +str(mse_distance_art_tort))
+ax[1].set_title(' MSE:' +"{0:.5f}".format(mse_distance_art_tort) + "r2score:" +"{0:.5f}".format(r2_distance_art_tort))
 ax[3].set_xlabel("image name")
 ax[3].set_ylabel("distance_tortuosity")
 ax[3].set_xticklabels(name_art ,rotation = 45)
@@ -167,21 +167,21 @@ ax[3].set_xticklabels(name_art ,rotation = 45)
 
 ax[4].scatter(name_art, rank_norm)
 ax[4].scatter(name_art, linear_reg_art_tort_norm)
-ax[4].set_title(' MSE:' + str(mse_linear_reg_art_tort) )
+ax[1].set_title(' MSE:' +"{0:.5f}".format(mse_linear_reg_art_tort) + "r2score:" +"{0:.5f}".format(r2_linear_reg_art_tort))
 ax[4].set_xlabel("image name")
 ax[4].set_ylabel("linear_reg_tort")
 ax[4].set_xticklabels(name_art ,rotation = 45)
 
 ax[5].scatter(name_art, rank_norm)
 ax[5].scatter(name_art, vti_norm)
-ax[5].set_title(' MSE:' + str(mse_vti) )
+ax[1].set_title(' MSE:' +"{0:.5f}".format(mse_vti) + "r2score:" +"{0:.5f}".format(r2_vti))
 ax[5].set_xlabel("image name")
 ax[5].set_ylabel("vti ")
 ax[5].set_xticklabels(name_art ,rotation = 45)
 
 ax[6].scatter(name_art, rank_norm)
 ax[6].scatter(name_art, vti_mat_norm)
-ax[6].set_title(' MSE:' + str(mse_vti_mat) )
+ax[1].set_title(' MSE:' +"{0:.5f}".format(mse_vti_mat) + "r2score:" +"{0:.5f}".format(r2_vti_mat))
 ax[6].set_xlabel("image name")
 ax[6].set_ylabel("vti_mat ")
 ax[6].set_xticklabels(name_art ,rotation = 45)
