@@ -8,6 +8,25 @@ from sklearn.preprocessing import MinMaxScaler
 
 scaler = MinMaxScaler()
 
+def load_all(all_path, h,w):
+    X_all = []
+    y_all = []
+    tort = pd.read_csv(all_path+'allcleaned.csv')
+    print('Read all images')
+    for index, row in tort.iterrows():
+        image_path = os.path.join(all_path, str(row['image']) )
+        print(image_path)
+        img = cv2.imread(image_path, 0)
+        # print(img.shape)
+        img = cv2.resize(img, (w, h) ).astype(np.float32)
+        # img = img.transpose((2,0,1))
+        # img = img/255
+        X_all.append(img)
+        # y_train.append( [ row['VTI'] ] )
+        y_all.append( [ row['distance_tort'] ] )
+    return X_all, y_all
+
+
 def load_train(train_path, h,w):
     X_train = []
     y_train = []
@@ -191,6 +210,17 @@ def read_train_data_v2(path,  h,w):
     print('Train shape:', train_data.shape)
     print(train_data.shape[0], 'train samples')
     return train_data, train_target
+
+def read_all_data_v2(path,  h,w):
+    all_data, all_target = load_all(path,  h,w)
+    all_data = np.array(all_data, dtype=np.float32)
+    all_target = np.array(all_target, dtype=np.float32)
+    # train_data = train_data/255
+    
+    print('all shape:', all_data.shape)
+    print(all_data.shape[0], 'train samples')
+    return all_data, all_target
+
 
 def read_test_data_v2(path,  h,w):
     test_data, test_target = load_test(path,  h,w)
