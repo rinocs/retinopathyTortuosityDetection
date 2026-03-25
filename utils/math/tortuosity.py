@@ -1,19 +1,25 @@
 import math
-import numpy as np
-from utils.math import math as m
-from scipy import interpolate
-from matplotlib import pyplot as plt
+
 import cv2
+import numpy as np
+from matplotlib import pyplot as plt
 from numpy.core.fromnumeric import mean
+from scipy import interpolate
+
+from utils.math import math as m
+
 
 def two_point_dist(pt1, pt2):
-    return np.linalg.norm([x2 - x1 for x2, x1 in zip(pt1, pt2)])    
+    return np.linalg.norm([x2 - x1 for x2, x1 in zip(pt1, pt2)])
+
+
 def avg_pts(pts):
     dims = len(pts[0])
     avg_pt = []
     for dim in range(dims):
         avg_pt.append(np.mean([pt[dim] for pt in pts]).astype(int))
     return avg_pt
+
 
 def _distance_2p(x1, y1, x2, y2):
     """
@@ -35,7 +41,9 @@ def _curve_length(coord):
     """
     distance = 0
     for i in range(0, len(coord) - 1):
-        distance += _distance_2p(coord[i][0], coord[i][1], coord[i+1][0], coord[i+1][1])
+        distance += _distance_2p(
+            coord[i][0], coord[i][1], coord[i + 1][0], coord[i + 1][1]
+        )
     return distance
 
 
@@ -46,7 +54,10 @@ def _chord_length(coord):
     :param coord: array [[x1,y1],....,[xn,yn]]the x component of the curve , the y component of the curve
     :return: the chord length of the given curve
     """
-    return _distance_2p(coord[0][0], coord[0][1], coord[len(coord) - 1][0], coord[len(coord) - 1][1])
+    return _distance_2p(
+        coord[0][0], coord[0][1], coord[len(coord) - 1][0], coord[len(coord) - 1][1]
+    )
+
 
 def distance_measure_tortuosity(coord):
     """
@@ -61,8 +72,9 @@ def distance_measure_tortuosity(coord):
     if len(coord) < 2:
         raise ValueError("Given curve must have at least 2 elements")
 
-    #return (_curve_length(coord) / _chord_length(coord) -1)
+    # return (_curve_length(coord) / _chord_length(coord) -1)
     return _curve_length(coord) / _chord_length(coord)
+
 
 def _detect_inflection_points(x, y):
     """
@@ -81,6 +93,7 @@ def _detect_inflection_points(x, y):
             inflection_points.append(iterator - 1)
     return inflection_points
 
+
 def distance_inflection_count_tortuosity(x, y):
     """
     Calculates the tortuosity by using arc-chord ratio multiplied by the curve inflection count
@@ -90,8 +103,11 @@ def distance_inflection_count_tortuosity(x, y):
     :param y: the list of y points of the curve
     :return: the inflection count tortuosity
     """
-    coords = [[x,y] for x,y in zip(x,y)]
-    return distance_measure_tortuosity(coords) * (len(_detect_inflection_points(x, y)) + 1)
+    coords = [[x, y] for x, y in zip(x, y)]
+    return distance_measure_tortuosity(coords) * (
+        len(_detect_inflection_points(x, y)) + 1
+    )
+
 
 def _curve_to_image(x, y):
     # get the maximum and minimum x and y values
@@ -124,11 +140,12 @@ def _curve_to_image(x, y):
         x[i] = x[i] - mm_values[0, 0]
         y[i] = y[i] - mm_values[0, 1]
 
-    for i in range(0, len(x)):       
-        image_curve[x[i],y[i]] = 255
-        
+    for i in range(0, len(x)):
+        image_curve[x[i], y[i]] = 255
+
     image_curve = np.asarray(image_curve, dtype="uint8")
     return image_curve
+
 
 def linear_regression_tortuosity(x, y, sampling_size=6, retry=True):
     """
@@ -154,9 +171,9 @@ def linear_regression_tortuosity(x, y, sampling_size=6, retry=True):
         min_point_x = x[0]
         min_point_y = y[0]
 
-        slope = (y[len(y) - 1] - min_point_y)/(x[len(x) - 1] - min_point_x)
+        slope = (y[len(y) - 1] - min_point_y) / (x[len(x) - 1] - min_point_x)
 
-        y_intercept = min_point_y - slope*min_point_x
+        y_intercept = min_point_y - slope * min_point_x
 
         sample_distance = max(round(len(x) / sampling_size), 1)
 
@@ -191,7 +208,6 @@ def linear_regression_tortuosity(x, y, sampling_size=6, retry=True):
     return r_2
 
 
-
 def tortuosity_density(x, y):
     """
     Defined in "A Novel Method for the Automatic Grading of Retinal Vessel Tortuosity" by Grisan et al.
@@ -203,7 +219,7 @@ def tortuosity_density(x, y):
     """
     inflection_points = _detect_inflection_points(x, y)
     n = len(inflection_points)
-    coord_ext = [ [x,y] for x,y in zip(x,y)]
+    coord_ext = [[x, y] for x, y in zip(x, y)]
     if not n:
         return 0
     starting_position = 0
@@ -212,13 +228,13 @@ def tortuosity_density(x, y):
     for in_point in inflection_points:
         segment_x = x[starting_position:in_point]
         segment_y = y[starting_position:in_point]
-        coords = [ [x,y] for x,y in zip(segment_x,segment_y)]
+        coords = [[x, y] for x, y in zip(segment_x, segment_y)]
         chord = _chord_length(coords)
         if chord:
             sum_segments += _curve_length(coords) / _chord_length(coords) - 1
         starting_position = in_point
 
-    return (n - 1)/n + (1/_curve_length(coord_ext))*sum_segments
+    return (n - 1) / n + (1 / _curve_length(coord_ext)) * sum_segments
 
 
 def squared_curvature_tortuosity(x, y):
@@ -230,14 +246,14 @@ def squared_curvature_tortuosity(x, y):
     :return: the squared curvature tortuosity of the given curve
     """
     curvatures = []
-    x_values = range(1, len(x)-1)
+    x_values = range(1, len(x) - 1)
     for i in x_values:
         x_1 = m.derivative1_centered_h1(i, x)
         x_2 = m.derivative2_centered_h1(i, x)
         y_1 = m.derivative1_centered_h1(i, y)
         y_2 = m.derivative2_centered_h1(i, y)
-        curvatures.append((x_1*y_2 - x_2*y_1)/(y_1**2 + x_1**2)**1.5)
-    return abs(np.trapz(curvatures, x_values))
+        curvatures.append((x_1 * y_2 - x_2 * y_1) / (y_1**2 + x_1**2) ** 1.5)
+    return abs(np.trapezoid(curvatures, x_values))
 
 
 def smooth_tortuosity_cubic(x, y, name):
@@ -248,116 +264,136 @@ def smooth_tortuosity_cubic(x, y, name):
 
     :return:
     """
-    spline = interpolate.CubicSpline(x, y)
-    points = [(x,y) for x,y in zip(x,y)]
+    # ensure strictly increasing x values for CubicSpline
+    x_arr = np.array(x)
+    y_arr = np.array(y)
+    indices = np.argsort(x_arr)
+    x_sorted = x_arr[indices]
+    y_sorted = y_arr[indices]
+    x_unique, unique_indices = np.unique(x_sorted, return_index=True)
+    y_unique = y_sorted[unique_indices]
+
+    if len(x_unique) < 2:
+        return None
+
+    spline = interpolate.CubicSpline(x_unique, y_unique)
+    points = [(x, y) for x, y in zip(x_unique, y_unique)]
     data = np.array(points)
-    tck,u = interpolate.splprep(data.transpose(), s=0)
+    tck, u = interpolate.splprep(data.transpose(), s=0)
     unew = np.arange(0, 1.01, 0.01)
     out = interpolate.splev(unew, tck)
 
     fig = plt.figure()
     fig.suptitle(name, fontsize=20)
-    plt.plot(out[0], out[1], color='orange')
-    plt.plot(data[:,0], data[:,1], 'ob')
+    plt.plot(out[0], out[1], color="orange")
+    plt.plot(data[:, 0], data[:, 1], "ob")
     plt.show()
     return spline(x[0])
+
 
 def tortuosity_measure(img):
     k = 0
 
-    contours,hier = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hier = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     torts = []
     arc_torts = []
     for cnt in contours:
-        output = cv2.drawContours(np.zeros(img.shape,dtype = np.uint8),[cnt],-1,(255,255,255),1)
+        output = cv2.drawContours(
+            np.zeros(img.shape, dtype=np.uint8), [cnt], -1, (255, 255, 255), 1
+        )
         count = np.count_nonzero(output)
-        if count>=30:            
+        if count >= 30:
 
-            x,y,h,w = cv2.boundingRect(cnt)
+            x, y, h, w = cv2.boundingRect(cnt)
 
-            roi = output[y:y+w, x:x+h]
+            roi = output[y : y + w, x : x + h]
 
-            r,c = roi.shape
-            back = np.zeros((r+2,c+2),dtype=np.uint8)
-            back[1:r+1,1:c+1] = roi
+            r, c = roi.shape
+            back = np.zeros((r + 2, c + 2), dtype=np.uint8)
+            back[1 : r + 1, 1 : c + 1] = roi
 
             iroi = back.copy()
             # cv2.imshow('iroi',iroi)
             # cv2.waitKey(0)
             order = order_points(iroi)
 
-            
-
             inflections = contour_inflections(iroi)
             clean = []
             [clean.append(x) for x in inflections if x not in clean]
 
             angles = get_angles(inflections)
-            c_angles = [incom for incom in angles if str(incom) != 'nan']
+            c_angles = [incom for incom in angles if str(incom) != "nan"]
             torts.append(mean(c_angles))
 
-            arcbased = arclength(order,iroi)
+            arcbased = arclength(order, iroi)
             arc_torts.append(arcbased)
 
-    tortuos = (180/mean(torts))
+    tortuos = 180 / mean(torts)
 
-    return mean(torts), tortuos, mean(arc_torts) 
+    return mean(torts), tortuos, mean(arc_torts)
 
 
-def arclength(order,img):
-    h = distance(order[0],order[-1])
+def arclength(order, img):
+    h = distance(order[0], order[-1])
 
     arclength = 0
     n = len(order)
-    for i in range(n-1):
-        arclength+= distance(order[i],order[i+1])
-    
-    t = arclength/h
+    for i in range(n - 1):
+        arclength += distance(order[i], order[i + 1])
+
+    t = arclength / h
 
     return t
+
+
 def order_points(img):
-    global r,c,visit
-    r,c = img.shape
-    visit = np.zeros((r,c))
-    x,y = start_point(img,r,c)
+    global r, c, visit
+    r, c = img.shape
+    visit = np.zeros((r, c))
+    x, y = start_point(img, r, c)
 
     flag = True
-    points = [[x,y]]
+    points = [[x, y]]
 
-    while(flag):
-        x,y = dfs(img,x,y)
-        if x!=-1 and y!=-1:
-            points.append([x,y])
+    while flag:
+        x, y = dfs(img, x, y)
+        if x != -1 and y != -1:
+            points.append([x, y])
         else:
-            flag=False
+            flag = False
 
     return points
 
-def getinflections(img,points):
-    kernels = [np.array([[1,0,0],[0,1,0],[0,0,1]],dtype=np.float32),
-                np.array([[0,1,0],[0,1,0],[0,1,0]],dtype=np.float32),
-                np.array([[0,0,1],[0,1,0],[1,0,0]],dtype=np.float32),
-                np.array([[0,0,0],[1,1,1],[0,0,0]],dtype=np.float32)]
+
+def getinflections(img, points):
+    kernels = [
+        np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32),
+        np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]], dtype=np.float32),
+        np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=np.float32),
+        np.array([[0, 0, 0], [1, 1, 1], [0, 0, 0]], dtype=np.float32),
+    ]
 
     pts = []
-    img[img==255] = 1
+    img[img == 255] = 1
 
-    for i,j in points:
-        roi = img[i-1:i+2, j-1:j+2]
+    for i, j in points:
+        roi = img[i - 1 : i + 2, j - 1 : j + 2]
         flag = 0
         for k in kernels:
             p = np.sum(k)
-            r = np.sum(np.multiply(roi,k))
-            if(r==p):
-                flag=1
+            r = np.sum(np.multiply(roi, k))
+            if r == p:
+                flag = 1
                 break
 
-        if flag==0:
-            pts.append([i,j])
+        if flag == 0:
+            pts.append([i, j])
 
     return pts
-def compute_angle(a,b,c):
+
+
+def compute_angle(a, b, c):
     a = np.array(a)
     b = np.array(b)
     c = np.array(c)
@@ -375,19 +411,21 @@ def compute_angle(a,b,c):
 
     return np.degrees(angle)
 
+
 def get_angles(inflects):
-    if(len(inflects)<3):
+    if len(inflects) < 3:
         return [180]
 
     n = len(inflects)
     angles = []
-    for i in range(n-2):
-        angles.append(compute_angle(inflects[i],inflects[i+1],inflects[i+2]))
+    for i in range(n - 2):
+        angles.append(compute_angle(inflects[i], inflects[i + 1], inflects[i + 2]))
 
     return angles
 
+
 def contour_inflections(img):
-    cnts = cv2.findContours(img,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)[-2]
+    cnts = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)[-2]
 
     cnt = sorted(cnts, key=cv2.contourArea)[-1]
 
@@ -399,65 +437,73 @@ def contour_inflections(img):
     # cv2.drawContours(canvas, [approx], -1, (0,0,255), 1)
     pts = []
     for pt in approx:
-        i,j = pt[0][1], pt[0][0]
-        if([i,j] not in pts):
-            pts.append([i,j])
+        i, j = pt[0][1], pt[0][0]
+        if [i, j] not in pts:
+            pts.append([i, j])
             # canvas[i][j] = [0,255,0]
-    
+
     # cv2.imshow('smooth',canvas)
     # cv2.waitKey(0)
-    
+
     return pts
-def start_point(img,r,c):
+
+
+def start_point(img, r, c):
     im = img.copy()
 
-    im[im==255] = 1
-    dummy = cv2.cvtColor(img.copy(),cv2.COLOR_GRAY2BGR)
-    for i in range(1,r-1):
-        for j in range(1,c-1):
-            if im[i][j]==1:
-                roi = im[i-1:i+2, j-1:j+2]
+    im[im == 255] = 1
+    dummy = cv2.cvtColor(img.copy(), cv2.COLOR_GRAY2BGR)
+    for i in range(1, r - 1):
+        for j in range(1, c - 1):
+            if im[i][j] == 1:
+                roi = im[i - 1 : i + 2, j - 1 : j + 2]
                 p = np.sum(roi)
-                if(p==2):
-                    dummy[i][j] = [0,0,255]
-                    return (i,j)
-                
-def dfs(mat,i,j):
-    
+                if p == 2:
+                    dummy[i][j] = [0, 0, 255]
+                    return (i, j)
+
+
+def dfs(mat, i, j):
+
     visit[i][j] = 1
 
-    if (j!=0 and visit[i][j-1]==0 and mat[i][j-1]!=0):
-        return (i,j-1)
+    if j != 0 and visit[i][j - 1] == 0 and mat[i][j - 1] != 0:
+        return (i, j - 1)
 
-    if (j+1<c and visit[i][j+1]==0 and mat[i][j+1]!=0):
-        return (i,j+1)
+    if j + 1 < c and visit[i][j + 1] == 0 and mat[i][j + 1] != 0:
+        return (i, j + 1)
 
-    if (i-1>=0 and visit[i-1][j]==0 and mat[i-1][j]!=0):
-        return (i-1,j)
-    
-    if (i+1<r and  visit[i+1][j]==0 and mat[i+1][j]!=0):
-        return (i+1,j)
+    if i - 1 >= 0 and visit[i - 1][j] == 0 and mat[i - 1][j] != 0:
+        return (i - 1, j)
 
-    if (i-1>=0 and j-1>=0 and visit[i-1][j-1]==0 and mat[i-1][j-1]!=0):
-        return (i-1,j-1)
-        
+    if i + 1 < r and visit[i + 1][j] == 0 and mat[i + 1][j] != 0:
+        return (i + 1, j)
 
-    if (i-1>=0 and j+1<c and visit[i-1][j+1]==0 and mat[i-1][j+1]!=0):
-        return (i-1,j+1)
+    if (
+        i - 1 >= 0
+        and j - 1 >= 0
+        and visit[i - 1][j - 1] == 0
+        and mat[i - 1][j - 1] != 0
+    ):
+        return (i - 1, j - 1)
 
-    if (i+1<r and j-1>=0 and visit[i+1][j-1]==0 and mat[i+1][j-1]!=0):
-        return (i+1,j-1)
-    if (i+1<r and j+1<c and visit[i+1][j+1]==0 and mat[i+1][j+1]!=0):
-        return (i+1,j+1)
+    if i - 1 >= 0 and j + 1 < c and visit[i - 1][j + 1] == 0 and mat[i - 1][j + 1] != 0:
+        return (i - 1, j + 1)
 
-    return (-1,-1)           
+    if i + 1 < r and j - 1 >= 0 and visit[i + 1][j - 1] == 0 and mat[i + 1][j - 1] != 0:
+        return (i + 1, j - 1)
+    if i + 1 < r and j + 1 < c and visit[i + 1][j + 1] == 0 and mat[i + 1][j + 1] != 0:
+        return (i + 1, j + 1)
+
+    return (-1, -1)
 
 
-def distance(a,b):
-    res = (b[0]-a[0])**2 + (b[1]-a[1])**2
+def distance(a, b):
+    res = (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2
     res = math.sqrt(res)
 
     return res
+
 
 # % ========================================= PARAMETER EXPLANATION ==========================================
 # % VTI: vessel tortuosity index.
@@ -469,67 +515,69 @@ def distance(a,b):
 # % len_cord: length of vessel chord which is the shortest path connecting vessel end points.
 # % VTI = (len_arch * sd * num_critical_pts * (mean_dm)) / len_cord;
 
+
 #  compute mean standard deviation of angels between lines tangent to each pixel along centerline and a reference axis
-def sd_theta(x,y):
+def sd_theta(x, y):
     """
     Compute standard deviation (SD) of angles between lines tangent to each pixel on the
     centerline and a reference-axis (i.e. x-axis) for a curve defined by x & y coordinates.
 
     Please cite the following paper if you use this code.
-    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence 
+    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence
     tomography angiography applied to sickle cell retinopathy." Biomedical optics express 8.8 (2017):3796-3806.
 
 
     Args:
         x ([array]): [the list of x points of the curve]
-   
+
         y ([array]): [the list of y points of the curve]
     """
-    
-    #compute ratio of derivative of y over x for determining tangent lines at each point on the curve
-    
+
+    # compute ratio of derivative of y over x for determining tangent lines at each point on the curve
+
     x = np.array(x)
     y = np.array(y)
-    dy = np.divide(np.diff(y),np.diff(x))
-    
-    #slope of reference axis (i.e. x-axis)
-    m1 = 0
-    slope = np.zeros(len(x)-1)
-    theta = np.zeros(len(x)-1)  
+    dy = np.divide(np.diff(y), np.diff(x))
 
-    #repeat for all pixels of the curve
-    for k in range(0,len(x) -2):
+    # slope of reference axis (i.e. x-axis)
+    m1 = 0
+    slope = np.zeros(len(x) - 1)
+    theta = np.zeros(len(x) - 1)
+
+    # repeat for all pixels of the curve
+    for k in range(0, len(x) - 2):
         # tangent line to the curve
         # tan_line = np.multiply((x-x[k]),dy[k])+y[k]
-        tan_line = ((x-x[k])*dy[k])+y[k]
+        tan_line = ((x - x[k]) * dy[k]) + y[k]
         # slope of tangent line.
-        coefficients = np.polyfit(x,tan_line,1)
-        #save slopes in a vector
-        slope[k] = coefficients[0]     
+        coefficients = np.polyfit(x, tan_line, 1)
+        # save slopes in a vector
+        slope[k] = coefficients[0]
         m2 = coefficients[0]
-        #compute angle between the tangent line and the x-axis (m1 = 0)
-        angle = np.arctan((m1-m2)/(1+m1*m2))*(180/np.pi)
+        # compute angle between the tangent line and the x-axis (m1 = 0)
+        angle = np.arctan((m1 - m2) / (1 + m1 * m2)) * (180 / np.pi)
         # save angle in a vector
         theta[k] = angle
-    #remove NaNs, if any
+    # remove NaNs, if any
     theta_final = theta[~np.isnan(theta)]
-    #SD of angles between tangent lines and x axis. Note that SD is divided by 100 to lie in range of 0 and 1
-    
-    SD = np.std(abs(theta_final))/100 
+    # SD of angles between tangent lines and x axis. Note that SD is divided by 100 to lie in range of 0 and 1
+
+    SD = np.std(abs(theta_final)) / 100
     return SD, slope
 
-def mean_distance_measure(x,y):
+
+def mean_distance_measure(x, y):
     """[summary]
-    Mean distance measure (DM) between points where the convexity of a curve changes. The curve or vessel 
+    Mean distance measure (DM) between points where the convexity of a curve changes. The curve or vessel
     centerline is defined by x & y coordinates.
 
-    Distance measure is the ratio of vessel length to its chord length. This can be used as a rough approximation 
+    Distance measure is the ratio of vessel length to its chord length. This can be used as a rough approximation
     of tortuosity. However, this global estimation may not match human perception of tortuosity (Grisan, et al
-    2008). In the current work, we used local distance measure between inflection points and showed that it better 
+    2008). In the current work, we used local distance measure between inflection points and showed that it better
     matches with visual perception of tortuosity.
 
     Please cite the following paper if you use this code :)
-    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence 
+    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence
     tomography angiography applied to sickle cell retinopathy." Biomedical optics express 8.8 (2017):3796-3806.
 
     Args:
@@ -538,10 +586,9 @@ def mean_distance_measure(x,y):
     """
     # index init
     idx_ifp = 0
-    N= 0
+    N = 0
     DM = []
-  
-    
+
     # curvature approx
     dx = np.diff(x)  # 1st derivative of xvalues
     dy = np.diff(y)  # 1st derivative of yvalues
@@ -550,113 +597,137 @@ def mean_distance_measure(x,y):
     # dy2 = (dy[0:len(dy)-2]+ dy[1:])/2  # 2nd derivative of y values
     # dy2=dy/dx
 
-    dx2=0.5*(dx[:-1]+dx[1:])
-    dy2=0.5*(dy[:-1]+dy[1:])
-    
+    dx2 = 0.5 * (dx[:-1] + dx[1:])
+    dy2 = 0.5 * (dy[:-1] + dy[1:])
+
     # remove the last element to match length of the 1st and 2nd derivatives to enable vector multiplication
     dx = dx[:-1]
     dy = dy[:-1]
-    
-    k = np.divide((((dx*dy2)-(dx2*dy))),((((dx)**2)+((dy)**2))**(3/2)))# curvature of the curve based on x and y coordinates
-    k = k+np.finfo(float).eps# adding epsilon to avoid zero values. Due to discrete integral, inflection points can be very close to zero
-    curvature = np.mean(abs(k));
 
-    #Detecting points of changes in sign of the curvature (inflection points).
+    k = np.divide(
+        (((dx * dy2) - (dx2 * dy))), ((((dx) ** 2) + ((dy) ** 2)) ** (3 / 2))
+    )  # curvature of the curve based on x and y coordinates
+    k = (
+        k + np.finfo(float).eps
+    )  # adding epsilon to avoid zero values. Due to discrete integral, inflection points can be very close to zero
+    curvature = np.mean(abs(k))
+
+    # Detecting points of changes in sign of the curvature (inflection points).
     # *** The DM between the 1st point on the curve and the first inflection point was computed separately. Similarly, DM between the last inflection
     # point and the end point of the vessel segment was computed separetly.
-    
-    for i in range(0, len(k) -1 ):
+
+    for i in range(0, len(k) - 1):
         previous = k[i]
-        current = k[i+1]
-        if previous*current < 0: # point off convexity change
-            N = N+1 # count number of inflection point
-            if N== 1:
-                idx = i+1
-                chord_len = np.sqrt((x[idx]-x[0])**2 + (y[idx]-y[0])**2) # chord length between the 1st point and the 1st inflection point
-                
-                coord = [(a,b) for a,b in zip(x[0:idx+1],y[0:idx+1]) ]
-                arc_length = _curve_length(coord) #arc length between the 1st point and 1st inflection point
-                dm = arc_length/chord_len
-                DM.insert(idx_ifp,dm ) # DM between the 1st curve point and the 1st inflection point
-                previous_pt = idx # record index of the inflection point
-            elif N>1 : # compute DM for the 2nd and the rest of inflection point
+        current = k[i + 1]
+        if previous * current < 0:  # point off convexity change
+            N = N + 1  # count number of inflection point
+            if N == 1:
+                idx = i + 1
+                chord_len = np.sqrt(
+                    (x[idx] - x[0]) ** 2 + (y[idx] - y[0]) ** 2
+                )  # chord length between the 1st point and the 1st inflection point
+
+                coord = [(a, b) for a, b in zip(x[0 : idx + 1], y[0 : idx + 1])]
+                arc_length = _curve_length(
+                    coord
+                )  # arc length between the 1st point and 1st inflection point
+                dm = arc_length / chord_len
+                DM.insert(
+                    idx_ifp, dm
+                )  # DM between the 1st curve point and the 1st inflection point
+                previous_pt = idx  # record index of the inflection point
+            elif N > 1:  # compute DM for the 2nd and the rest of inflection point
                 idx_ifp += 1
-                idx = i+1  # index for saving value 
-                chord_len = np.sqrt((x[idx]-x[previous_pt])**2 + (y[idx]- y[previous_pt])**2) #chord length between inflection points
-                coord = [(a,b) for a,b in zip(x[previous_pt :idx+1],y[previous_pt:idx+1]) ] #
-                arc_length = _curve_length(coord) # arc length between  inflection points
-                DM.insert(idx_ifp,arc_length/chord_len)
+                idx = i + 1  # index for saving value
+                chord_len = np.sqrt(
+                    (x[idx] - x[previous_pt]) ** 2 + (y[idx] - y[previous_pt]) ** 2
+                )  # chord length between inflection points
+                coord = [
+                    (a, b)
+                    for a, b in zip(x[previous_pt : idx + 1], y[previous_pt : idx + 1])
+                ]  #
+                arc_length = _curve_length(
+                    coord
+                )  # arc length between  inflection points
+                DM.insert(idx_ifp, arc_length / chord_len)
                 previous_pt = idx
     if N >= 1:
-        idx_ifp = idx_ifp+1
-        chord_len = np.sqrt((x[len(x)-1]-x[previous_pt])**2 + (y[len(y)-1]- y[previous_pt])**2) 
-        coord = [(a,b) for a,b in zip(x[previous_pt:],y[previous_pt:]) ]
+        idx_ifp = idx_ifp + 1
+        chord_len = np.sqrt(
+            (x[len(x) - 1] - x[previous_pt]) ** 2
+            + (y[len(y) - 1] - y[previous_pt]) ** 2
+        )
+        coord = [(a, b) for a, b in zip(x[previous_pt:], y[previous_pt:])]
         arc_length = _curve_length(coord)
-        DM.insert(idx_ifp, arc_length/chord_len)
-        
+        DM.insert(idx_ifp, arc_length / chord_len)
+
     if N < 1:
         print(len(x))
-        chord_len = np.sqrt((x[(len(x)-1)]-x[0])**2 +(y[(len(y)-1)]-y[0])**2 )
-        coord = [(a,b) for a,b in zip(x,y) ]
+        chord_len = np.sqrt(
+            (x[(len(x) - 1)] - x[0]) ** 2 + (y[(len(y) - 1)] - y[0]) ** 2
+        )
+        coord = [(a, b) for a, b in zip(x, y)]
         arc_length = _curve_length(coord)
-        DM.insert(idx_ifp, arc_length/chord_len)
-    if N >=1 :
+        DM.insert(idx_ifp, arc_length / chord_len)
+    if N >= 1:
         DM.pop(0)
         DM = DM[:-1]
         DM = np.array(DM)
         # DM = DM[~np.isnan(DM)]
-        ipf =  len(DM)+1
+        ipf = len(DM) + 1
     else:
-        ipf =1 
-        
-    
+        ipf = 1
+
     mean_dm = np.mean(DM)
-    
+
     if np.isnan(mean_dm):
         mean_dm = 1
-    return mean_dm , ipf, curvature,DM
-    
-def num_critical_points(x,y):
-    
+    return mean_dm, ipf, curvature, DM
+
+
+def num_critical_points(x, y):
     """
     Determine number of critical points in a curve defined by x and y coordinates
     A critical point is a point on the curve where the derivative vanishes (either zero or doesn't exist).
     In such a point, there is a change in sign of the slope of tangent lines.
 
     Please cite the following paper if you use this code
-    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence 
+    Khansari, et al. "Method for quantitative assessment of retinal vessel tortuosity in % optical coherence
     tomography angiography applied to sickle cell retinopathy." Biomedical optics express 8.8 (2017):3796-3806.
-        
+
     """
     N = 0
     x = np.array(x)
     y = np.array(y)
-    dy = np.diff(y)/np.diff(x) # compute ratio of derivative of y over x to determine tangent lines at each point on the curve
-    slope = np.zeros( len(x)-1) 
+    dy = np.diff(y) / np.diff(
+        x
+    )  # compute ratio of derivative of y over x to determine tangent lines at each point on the curve
+    slope = np.zeros(len(x) - 1)
     ######## matlab i numeri piccoli li mette a 0 ecco il perché delal differenza tra il valore calcolato in  python e matlab: proviamo con una epsilon piccola
     # epsilon=0.00000000000000004 # MSE 0.062
-    epsilon=0.00000000000000001 # MSE 0.0568
+    epsilon = 0.00000000000000001  # MSE 0.0568
     # epsilon=0.000000000000000009 # MSE 0.069
     # epsilon=0.000000000000000005 # MSE 0.06901
     # epsilon=0.0000000000000000001 # MSE 0.06901
-        
+
     # compute slope of tangent lines for every pixel along the curve
-    for k in range(0, len(x)-1):
-        tang = (x - x[k])*dy[k]+y[k] # tangent line to the curve
-        coefficients = np.polyfit(x,tang,1) # slope of the tangent line
-        slope[k] = coefficients[0] # save slope    
+    for k in range(0, len(x) - 1):
+        tang = (x - x[k]) * dy[k] + y[k]  # tangent line to the curve
+        coefficients = np.polyfit(x, tang, 1)  # slope of the tangent line
+        slope[k] = coefficients[0]  # save slope
     slope[np.abs(slope) < epsilon] = 0
-    for ii in range(0,len(slope)-1):
+    for ii in range(0, len(slope) - 1):
         previous = slope[ii]
-        current = slope[ii+1]
-        if previous*current < 0:
-            N = N+1 # add 1 to the number of crtical points(twists)
+        current = slope[ii + 1]
+        if previous * current < 0:
+            N = N + 1  # add 1 to the number of crtical points(twists)
     if N == 0:
-        N=1
-        
+        N = 1
+
     return N
-    
-def vessel_tort_index(arch_len, sd,num_crit_points,mean_dm, chord_len):
+
+
+def vessel_tort_index(arch_len, sd, num_crit_points, mean_dm, chord_len):
     """
     VTI: vessel tortuosity index.
     sd: standard deviation of the angels between lines tangent to every pixel along the centerline.
@@ -680,6 +751,5 @@ def vessel_tort_index(arch_len, sd,num_crit_points,mean_dm, chord_len):
     num_crit_points = float(num_crit_points)
     mean_dm = float(mean_dm)
     chord_len = float(chord_len)
-    
-    
-    return (arch_len*sd*num_crit_points*(mean_dm))/chord_len
+
+    return (arch_len * sd * num_crit_points * (mean_dm)) / chord_len
